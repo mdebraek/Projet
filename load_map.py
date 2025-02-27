@@ -25,7 +25,6 @@ def load_map(map_file_path:str)->dict:
     
     #search in all lines for data
     for line in range (len(raw_data)):
-        print(raw_data[line])
         if raw_data[line].split(":")[0] =="map":
             info=raw_data[line+1].split(" ")
             game_data["map"]=[int(info[0]), int(info[1])]
