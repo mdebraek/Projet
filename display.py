@@ -14,9 +14,10 @@ def load_map(map_file_path:str)->dict:
     -------
     specification: Mitta Kylian, De Braekeleer Mickaël (v.1 20/02/25)
     implementation: De Braekeleer Mickaël (v1 26/02/25)
+    implementation: De Braekeleer Mickaël (v2 06/03/25)
     """
     #init game data dict with basic info
-    game_data={"map":None, "player1":{"call":10, "apprentices":{}, "dragon":{}}, "player2":{"call":10, "apprentices":{}, "dragon":{}}, "eggs":{}}
+    game_data={"map":None, "player1":{"Altar":[], "call":10, "apprentices":{}, "dragon":{}}, "player2":{"Altar":[], "call":10, "apprentices":{}, "dragon":{}}, "eggs":{}}
     #open the file of the map
     map=open(map_file_path, "r")
     #get all data lines inside a list (list of lines)
@@ -26,14 +27,19 @@ def load_map(map_file_path:str)->dict:
     
     #search in all lines for data
     for line in range (len(raw_data)):
-        if raw_data[line].split(":")[0] =="map":
+        if raw_data[line].split(":")[0] =="altars":
+            info=raw_data[line+1].split(" ")
+            game_data["player1"]["Altar"]=[int(info[1]), int(info[2])]
+            info=raw_data[line+2].split(" ")
+            game_data["player2"]["Altar"]=[int(info[1]), int(info[2])]      
+        elif raw_data[line].split(":")[0] =="map":
             info=raw_data[line+1].split(" ")
             game_data["map"]=[int(info[0]), int(info[1])]
         elif raw_data[line].split(":")[0] == "apprentices":
             line+=1
             while raw_data[line].split(":")[0] !="eggs":
                 info=raw_data[line].split(" ")
-                if info[0]==1:
+                if int(info[0])==1:
                     game_data["player1"]["apprentices"][info[1]]={}
                     game_data["player1"]["apprentices"][info[1]]["pos"]=[int(info[2]), int(info[3])]
                     game_data["player1"]["apprentices"][info[1]]["max_health"]=int(info[4])
@@ -64,27 +70,49 @@ def load_map(map_file_path:str)->dict:
 #example   
 map_path="C:/Users/coram/OneDrive/Desktop/projet/map.drk" 
 game_data=load_map(map_path)
+print(game_data)
 
 def info_bracket(player:str,game_data: dict)->list:
-    """generate info bracket for a player
+    """generate info bracket for a player (info on right or left of the display)
 
     Parameters
     ----------
-    player : 
-    game_data : 
+    player : str name of the player (str)
+    game_data : dictionnary of all game data(dict)
+    
+    Returns
+    -------
+    player_info : list of all info on a player line by line (list)
 
     Version
     -------
-    specification: Mitta Kylian (v.1 20/02/25)
-    implementation: Mitta Kylian, De Braekeleer Mickaël (v.1 27/02/25)
-    
+    specification: De Braekeleer Mickaël (v.1 06/03/25)
+    implementation: De Braekeleer Mickaël (v.1 06/03/25)
     """
+    print(player)
+    print(game_data[player])
+    
+    #initialisation of the returned list 
     player_info=[]
+    
+    #Add altar position to the brackets
+    player_info.append("-Altar:")
+    position=game_data[player]["Altar"]
+    player_info.append(f"   >pos : {position[0]} {position[1]}")
+    #Add time for next call to the brackets
+    Cooldown_Summon=game_data[player]["call"]
+    if Cooldown_Summon==0:
+        player_info.append("Appel disponnible")
+    else:
+        player_info.append(f"Appel : {Cooldown_Summon} tours")   
+    #Browse each apprentic of a player and add their info to the brackets
     for apprentice in game_data[player]["apprentices"]:
         player_info.append(f"   -{apprentice} :")
-        player_info.append(f"   >PV : {game_data[player]["apprentices"]["apprentice"]["current_health"]}/{game_data[player]["apprentices"]["apprentice"]["max_health"]}")
-        position=game_data[player]["apprentices"]["apprentice"]["pos"]
+        player_info.append(f"   >PV : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}")
+        #temporary variable for position of the character 
+        position=game_data[player]["apprentices"][apprentice]["pos"]
         player_info.append(f"   >pos : {position[0]} {position[1]} ")
+    #Browse each dragon of a player and add their info to the brackets
     for dragon in game_data[player]["dragon"]:
         if dragon==game_data[player]["dragon"][0]:
             player_info.append(f"-Dragon🐉:")
@@ -92,8 +120,10 @@ def info_bracket(player:str,game_data: dict)->list:
         player_info.append(f"   >PV : {game_data[player]["dragon"][dragon]["current_health"]}/{game_data[player]["dragon"][dragon]["max_health"]}")
         player_info.append(f"   >Dégats : {game_data[player]["dragon"][dragon]["attack_damage"]}")
         player_info.append(f"   >Portée : {game_data[player]["dragon"][dragon]["attack_range"]}")
+        #temporary variable for position of the character 
         position=game_data[player]["dragon"][dragon]["pos"]
         player_info.append(f"   >pos : {position[0]} {position[1]} ")
+    return player_info
     
     
 
@@ -107,7 +137,7 @@ def display(game_data: dict):
     Version
     -------
     specification: Mitta Kylian, De Braekeleer Mickaël (v.1 20/02/25)
-    implementation: Mitta Kylian, De Braekeleer Mickaël (v.1 27/02/25)
+    implementation: Mitta Kylian, De Braekeleer Mickaël (v.1.1 06/03/25)
     """
     #initial clear
     print(term.home + term.clear + term.hide_cursor)
@@ -149,5 +179,6 @@ def display(game_data: dict):
 term = blessed.Terminal()  
 
     
-display(game_data)
+#display(game_data)
+print(info_bracket("player1", game_data))
 input("ordre ->")
