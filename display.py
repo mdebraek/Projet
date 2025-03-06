@@ -107,7 +107,7 @@ def info_bracket(player:str,game_data: dict)->list:
         player_info.append(f"Appel : {Cooldown_Summon} tours")   
     #Browse each apprentic of a player and add their info to the brackets
     for apprentice in game_data[player]["apprentices"]:
-        player_info.append(f"   -{apprentice} :")
+        player_info.append(f"-{apprentice} :")
         player_info.append(f"   >PV : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}")
         #temporary variable for position of the character 
         position=game_data[player]["apprentices"][apprentice]["pos"]
