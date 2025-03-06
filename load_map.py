@@ -13,6 +13,7 @@ def load_map(map_file_path:str)->dict:
     -------
     specification: Mitta Kylian, De Braekeleer Mickaël (v.1 20/02/25)
     implementation: De Braekeleer Mickaël (v1 26/02/25)
+    implementation: De Braekeleer Mickaël (v2 06/03/25)
     """
     #init game data dict with basic info
     game_data={"map":None, "player1":{"call":10, "apprentices":{}, "dragon":{}}, "player2":{"call":10, "apprentices":{}, "dragon":{}}, "eggs":{}}
@@ -32,7 +33,7 @@ def load_map(map_file_path:str)->dict:
             line+=1
             while raw_data[line].split(":")[0] !="eggs":
                 info=raw_data[line].split(" ")
-                if info[0]==1:
+                if int(info[0])==1:
                     game_data["player1"]["apprentices"][info[1]]={}
                     game_data["player1"]["apprentices"][info[1]]["pos"]=[int(info[2]), int(info[3])]
                     game_data["player1"]["apprentices"][info[1]]["max_health"]=int(info[4])
@@ -59,11 +60,6 @@ def load_map(map_file_path:str)->dict:
                 game_data["eggs"][info[0]]["regeneration"]=int(info[7][0:1])
                 if line == len(raw_data)-1:  
                     return game_data
-
-#example   
-map_path="C:/Users/coram/OneDrive/Desktop/projet/map.drk" 
-game_data=load_map(map_path)
-print(game_data)
 
 
 
