@@ -16,7 +16,7 @@ def load_map(map_file_path:str)->dict:
     implementation: De Braekeleer Mickaël (v2 06/03/25)
     """
     #init game data dict with basic info
-    game_data={"map":None, "player1":{"call":10, "apprentices":{}, "dragon":{}}, "player2":{"call":10, "apprentices":{}, "dragon":{}}, "eggs":{}}
+    game_data={"map":None, "player1":{"Altar":[], "call":10, "apprentices":{}, "dragon":{}}, "player2":{"Altar":[], "call":10, "apprentices":{}, "dragon":{}}, "eggs":{}}
     #open the file of the map
     map=open(map_file_path, "r")
     #get all data lines inside a list (list of lines)
@@ -26,7 +26,12 @@ def load_map(map_file_path:str)->dict:
     
     #search in all lines for data
     for line in range (len(raw_data)):
-        if raw_data[line].split(":")[0] =="map":
+        if raw_data[line].split(":")[0] =="altars":
+            info=raw_data[line+1].split(" ")
+            game_data["player1"]["Altar"]=[int(info[1]), int(info[2])]
+            info=raw_data[line+2].split(" ")
+            game_data["player2"]["Altar"]=[int(info[1]), int(info[2])]      
+        elif raw_data[line].split(":")[0] =="map":
             info=raw_data[line+1].split(" ")
             game_data["map"]=[int(info[0]), int(info[1])]
         elif raw_data[line].split(":")[0] == "apprentices":
@@ -60,7 +65,5 @@ def load_map(map_file_path:str)->dict:
                 game_data["eggs"][info[0]]["regeneration"]=int(info[7][0:1])
                 if line == len(raw_data)-1:  
                     return game_data
-
-
 
 
