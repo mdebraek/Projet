@@ -70,7 +70,7 @@ def load_map(map_file_path:str)->dict:
 #example   
 map_path="C:/Users/coram/OneDrive/Desktop/projet/map.drk" 
 game_data=load_map(map_path)
-print(game_data)
+term = blessed.Terminal()
 
 def info_bracket(player:str,game_data: dict)->list:
     """generate info bracket for a player (info on right or left of the display)
@@ -107,7 +107,7 @@ def info_bracket(player:str,game_data: dict)->list:
         player_info.append(f"Appel : {Cooldown_Summon} tours")   
     #Browse each apprentic of a player and add their info to the brackets
     for apprentice in game_data[player]["apprentices"]:
-        player_info.append(f"-{apprentice} :")
+        player_info.append(f"   -{apprentice} :")
         player_info.append(f"   >PV : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}")
         #temporary variable for position of the character 
         position=game_data[player]["apprentices"][apprentice]["pos"]
@@ -124,8 +124,7 @@ def info_bracket(player:str,game_data: dict)->list:
         position=game_data[player]["dragon"][dragon]["pos"]
         player_info.append(f"   >pos : {position[0]} {position[1]} ")
     return player_info
-    
-    
+
 
 def display(game_data: dict):
     """Generate the display screen
@@ -151,10 +150,16 @@ def display(game_data: dict):
     player_2=["Player 2 :", "-Apprenti🚺:"]
     player_1.extend(info_bracket("player1"))
     player_2.extend(info_bracket("player2"))
-    
-    #maximum vertical size of info 
+
+    #maximum vertical size of display
     max_size_Y=max(Size_Y*2-1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
                                    4+len(game_data["player2"]["apprentices"])+len(game_data["player2"]["dragon"]),))
+    #maximum horiziontal size of display
+    max_info_p1=max([len(elem) for elem in player_1])
+    max_info_p2=max([len(elem) for elem in player_2])
+    max_size_X=int(max_info_p1+max_info_p2+game_data["map"][0])
+    
+    #generate display
     for line in range (max_size_Y):
         if line<=Size_Y:
             if line==0:
@@ -172,13 +177,8 @@ def display(game_data: dict):
                 print("+")
         else:
             print("dragon")
-                
-        
+  
 
-    
-term = blessed.Terminal()  
-
-    
 #display(game_data)
 print(info_bracket("player1", game_data))
 input("ordre ->")
