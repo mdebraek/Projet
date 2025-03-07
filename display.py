@@ -89,9 +89,6 @@ def info_bracket(player:str,game_data: dict)->list:
     specification: De Braekeleer Mickaël (v.1 06/03/25)
     implementation: De Braekeleer Mickaël (v.1 06/03/25)
     """
-    print(player)
-    print(game_data[player])
-    
     #initialisation of the returned list 
     player_info=[]
     
@@ -104,27 +101,61 @@ def info_bracket(player:str,game_data: dict)->list:
     if Cooldown_Summon==0:
         player_info.append("Appel disponnible")
     else:
-        player_info.append(f"Appel : {Cooldown_Summon} tours")   
+        player_info.append(f"Appel : {Cooldown_Summon} tours")
+           
     #Browse each apprentic of a player and add their info to the brackets
+    have_apprentice=False
     for apprentice in game_data[player]["apprentices"]:
+        if not have_apprentice:
+            if int(player[-1])==1:
+                player_info.append(f"-Apprenti🚹:")
+            else:
+                player_info.append(f"-Apprenti🚺:")
+            have_apprentice=True
         player_info.append(f"   -{apprentice} :")
-        player_info.append(f"   >PV : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}")
+        player_info.append(f"   >PV  : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}")
         #temporary variable for position of the character 
         position=game_data[player]["apprentices"][apprentice]["pos"]
         player_info.append(f"   >pos : {position[0]} {position[1]} ")
+        
     #Browse each dragon of a player and add their info to the brackets
+    have_dragon=False
     for dragon in game_data[player]["dragon"]:
-        if dragon==game_data[player]["dragon"][0]:
+        if not have_dragon:
             player_info.append(f"-Dragon🐉:")
+            have_dragon=True
         player_info.append(f"   -{dragon}:")
-        player_info.append(f"   >PV : {game_data[player]["dragon"][dragon]["current_health"]}/{game_data[player]["dragon"][dragon]["max_health"]}")
+        player_info.append(f"   >PV     : {game_data[player]["dragon"][dragon]["current_health"]}/{game_data[player]["dragon"][dragon]["max_health"]}")
         player_info.append(f"   >Dégats : {game_data[player]["dragon"][dragon]["attack_damage"]}")
         player_info.append(f"   >Portée : {game_data[player]["dragon"][dragon]["attack_range"]}")
         #temporary variable for position of the character 
         position=game_data[player]["dragon"][dragon]["pos"]
-        player_info.append(f"   >pos : {position[0]} {position[1]} ")
+        player_info.append(f"   >pos    : {position[0]} {position[1]} ")
     return player_info
 
+def custom_len(word:str)->int:
+    """len func but count 2 for any emoji scanned
+
+    Parameters
+    ----------
+    word
+
+    Returns
+    -------
+    count
+    
+    Version
+    -------
+    specification: De Braekeleer Mickaël (v.1 07/03/25)
+    implementation: De Braekeleer Mickaël (v.1 07/03/25)
+    """
+    count=0
+    for char in word:
+        if char in "🚹🚺🐉":
+            count+=2
+        else:
+            count+=1
+    return count
 
 def display(game_data: dict):
     """Generate the display screen
@@ -146,39 +177,60 @@ def display(game_data: dict):
     Size_Y = game_data["map"][1]
     
     #initial info bracket
-    player_1=["Player 1 :", "-Apprenti🚹:"]
-    player_2=["Player 2 :", "-Apprenti🚺:"]
-    player_1.extend(info_bracket("player1"))
-    player_2.extend(info_bracket("player2"))
+    player_1=["Player 1 :"]
+    player_2=["Player 2 :"]
+    player_1.extend(info_bracket("player1", game_data))
+    player_2.extend(info_bracket("player2", game_data))
+    
 
     #maximum vertical size of display
-    max_size_Y=max(Size_Y*2-1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
+    max_size_Y=max(Size_Y*3+1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
                                    4+len(game_data["player2"]["apprentices"])+len(game_data["player2"]["dragon"]),))
     #maximum horiziontal size of display
     max_info_p1=max([len(elem) for elem in player_1])
     max_info_p2=max([len(elem) for elem in player_2])
-    max_size_X=int(max_info_p1+max_info_p2+game_data["map"][0])
+    max_size_X=int(max_info_p1+max_info_p2+game_data["map"][0]*3+1)
     
     #generate display
     for line in range (max_size_Y):
-        if line<=Size_Y:
-            if line==0:
-                print("Player 1 : ",end="")
-                for case in range (Size_X):
-                    if case+1<10:
-                        print(f"+{str(case+1)}{str(case+1)}",end="")
-                    else:
-                        print(f"+{str(case+1)}",end="")
-                print("+ Player 2 : ")
-            else:
-                print(" "*11,end="")
-                for case in range (Size_X):
-                    print("+--",end="")
-                print("+")
+        #print player 1 info
+        if len(player_1)>line:
+            print(player_1[line],end="")
+            print(" "*(max_info_p1-custom_len(player_1[line])),end="")
+        #if no info for player 1, just print a blank space
         else:
-            print("dragon")
+            print(" "*max_info_p1,end="")
+            
+        #generate Array
+        #if line=no info case
+        if line%3==0:
+            for cases in range (game_data["map"][0]*3):
+                if cases%3==0:
+                    print("+",end="")
+                else:
+                    print("-",end="")
+            print("+",end="")
+        #if line=info case  
+        else:
+            for cases in range (game_data["map"][0]*3):
+                if cases%3==0:
+                    print("|",end="")
+                else:
+                    print("d",end="")
+            print("|",end="")
+        
+        #print player 2 info
+        if len(player_2)>line:   
+            print("  ",end="")
+            print(player_2[line])
+        #blank space if no info for player 2
+        else:
+            print("")
+        
+        
+        
   
 
-#display(game_data)
-print(info_bracket("player1", game_data))
+display(game_data)
+
 input("ordre ->")
