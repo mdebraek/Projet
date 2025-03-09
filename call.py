@@ -14,18 +14,18 @@ def call(game_data):
     specification: Hamza SOSSEY-ALAOUI (v.1 20/02/25)
     """
     altars1=game_data['player1']['altars'] 
-    dictof_app1=game_data['player1']['apprentices']['pos']
-    dictof_drag1=game_data['player1']['dragon']['pos']
-    dictof_AppDrag1={**dictof_app1,**dictof_drag1}
-    for pos in dictof_AppDrag1:
+    posof_app1=game_data['player1']['apprentices']['pos']
+    posof_drag1=game_data['player1']['dragon']['pos']
+    posof_AppDrag1={**posof_app1,**posof_drag1}
+    for pos in posof_AppDrag1:
         pos[0]=altars1[0] and pos[1]=altars1[1]
         return game_data
     
     altars2=game_data['player2']['altars']
-    dictof_app2=game_data['player2']['apprentices']['pos']
-    dictof_drag2=game_data['player2']['dragon']['pos']
-    dictof_AppDrag2={**dictof_app2,**dictof_drag2}
-    for pos in dictof_AppDrag2:
+    posof_app2=game_data['player2']['apprentices']['pos']
+    posof_drag2=game_data['player2']['dragon']['pos']
+    posof_AppDrag2={**posof_app2,**posof_drag2}
+    for pos in posof_AppDrag2:
         pos[0]=altars2[0] and pos[1]=altars2[1]
         return game_data
     display(game_data)
