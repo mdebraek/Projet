@@ -11,6 +11,7 @@ def regeneration(game_data):
     Version
     -------
     specification: Hamza SOSSEY-ALAOUI (v.1 20/02/25)
+    implementation: Hamza SOSSEY-ALAOUI (v.1 10/03/25)
     """
     dict_ofapp1=game_data['player1']['apprentices'] 
     dict_ofapp2=game_data['player2']['apprentices']
