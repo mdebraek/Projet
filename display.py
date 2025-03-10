@@ -157,6 +157,47 @@ def custom_len(word:str)->int:
             count+=1
     return count
 
+def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
+    """Generate map grid
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    specification: De Braekeleer Mickaël (v.1 10/03/25)
+    implementation: De Braekeleer Mickaël (v.1 10/03/25)
+    """
+    map_grid=[["🟨"]*(Size_Y+1)]*(Size_X+1)
+    
+    #all position for player 1 team
+    pos_altar_p1=game_data["player1"]["Altar"]
+    map_grid[pos_altar_p1[0]][pos_altar_p1[1]]="🏰"
+    for apprentice in game_data["player1"]["apprentices"]:
+        pos_X=game_data["player1"]["apprentices"][apprentice]["pos"][0]
+        pos_Y=game_data["player1"]["apprentices"][apprentice]["pos"][1]
+        map_grid[pos_X][pos_Y]="🚹"
+    for dragon in game_data["player1"]["dragon"]:
+        pos_X=game_data["player1"]["dragon"][dragon]["pos"][0]
+        pos_Y=game_data["player1"]["dragon"][dragon]["pos"][1]
+        map_grid[pos_X][pos_Y]="🐉"
+    
+    #all position for player 2 team
+    pos_altar_p2=game_data["player2"]["Altar"]
+    map_grid[pos_altar_p2[0]][pos_altar_p2[1]]="🏰"
+    for apprentice in game_data["player2"]["apprentices"]:
+        pos_X=game_data["player2"]["apprentices"][apprentice]["pos"][0]
+        pos_Y=game_data["player2"]["apprentices"][apprentice]["pos"][1]
+        print(pos_X, pos_Y)
+        map_grid[pos_X][pos_Y]="🚺"
+    for dragon in game_data["player2"]["dragon"]:
+        pos_X=game_data["player2"]["dragon"][dragon]["pos"][0]
+        pos_Y=game_data["player2"]["dragon"][dragon]["pos"][1]
+        map_grid[pos_X][pos_Y]="🐉"
+    
+    return map_grid
+    
+
 def display(game_data: dict):
     """Generate the display screen
     
@@ -176,6 +217,10 @@ def display(game_data: dict):
     Size_X = game_data["map"][0]
     Size_Y = game_data["map"][1]
     
+    map_grid=generate_map_grid(Size_X, Size_Y, game_data)
+    
+    
+    
     #initial info bracket
     player_1=["Player 1 :"]
     player_2=["Player 2 :"]
@@ -186,14 +231,13 @@ def display(game_data: dict):
     #maximum vertical size of display
     max_size_Y=max(Size_Y*3+1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
                                    4+len(game_data["player2"]["apprentices"])+len(game_data["player2"]["dragon"]),))
-    #maximum horiziontal size of display
+    
+    #maximum horiziontal size of left display brackets
     max_info_p1=max([len(elem) for elem in player_1])
-    max_info_p2=max([len(elem) for elem in player_2])
-    max_size_X=int(max_info_p1+max_info_p2+game_data["map"][0]*3+1)
     
     #generate display
     for line in range (max_size_Y):
-        #print player 1 info
+        #print player 1 info brackets
         if len(player_1)>line:
             print(player_1[line],end="")
             print(" "*(max_info_p1-custom_len(player_1[line])),end="")
@@ -216,10 +260,10 @@ def display(game_data: dict):
                 if cases%3==0:
                     print("|",end="")
                 else:
-                    print("d",end="")
+                    print(f"{map_grid[line//3-1][cases//3-1]}",end="")
             print("|",end="")
         
-        #print player 2 info
+        #print player 2 info brackets
         if len(player_2)>line:   
             print("  ",end="")
             print(player_2[line])
@@ -228,9 +272,8 @@ def display(game_data: dict):
             print("")
         
         
-        
+print(game_data)
   
-
 display(game_data)
 
 input("ordre ->")
