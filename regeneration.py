@@ -11,7 +11,6 @@ def regeneration(game_data):
     Version
     -------
     specification: Hamza SOSSEY-ALAOUI (v.1 20/02/25)
-    implementation: Hamza SOSSEY-ALAOUI (v.1 10/03/25)
     """
     dict_ofapp1=game_data['player1']['apprentices'] 
     dict_ofapp2=game_data['player2']['apprentices']
@@ -21,14 +20,13 @@ def regeneration(game_data):
         curr_hea_app=apprentice['current_health']
         pv_app=apprentice['max_health']
         if curr_hea_app >= pv_app :
-            return game_data
+            curr_hea_app=curr_hea_app
         else:
             hea_diff=pv_app - curr_hea_app
             if hea_diff>=reg_app:
                 curr_hea_app+=reg_app
             else:
                 curr_hea_app+=hea_diff
-        return game_data
     
     dict_ofdrag1=game_data['player1']['dragon'] 
     dict_ofdrag2=game_data['player2']['dragon']
@@ -38,11 +36,11 @@ def regeneration(game_data):
         curr_hea_drag=dragon['current_health']
         pv_drag=dragon['max_health']
         if curr_hea_drag >= pv_drag :
-            return game_data
+            curr_hea_drag=curr_hea_drag
         else:
             hea_diff=pv_drag - curr_hea_drag
             if hea_diff>=reg_drag:
                 curr_hea_drag+=reg_drag
             else:
                 curr_hea_drag+=hea_diff
-        return game_data
+    return game_data
