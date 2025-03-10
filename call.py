@@ -19,7 +19,7 @@ def call(game_data):
     posof_AppDrag1={**posof_app1,**posof_drag1}
     for pos in posof_AppDrag1:
         pos[0]=altars1[0] and pos[1]=altars1[1]
-        return game_data
+        
     
     altars2=game_data['player2']['altars']
     posof_app2=game_data['player2']['apprentices']['pos']
@@ -27,5 +27,7 @@ def call(game_data):
     posof_AppDrag2={**posof_app2,**posof_drag2}
     for pos in posof_AppDrag2:
         pos[0]=altars2[0] and pos[1]=altars2[1]
-        return game_data
+        
     display(game_data)
+    return game_data    
+    
