@@ -151,7 +151,7 @@ def custom_len(word:str)->int:
     """
     count=0
     for char in word:
-        if char in "🚹🚺🐉":
+        if char in "🚹🚺🐉🟨🏰":
             count+=2
         else:
             count+=1
@@ -168,7 +168,8 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
     specification: De Braekeleer Mickaël (v.1 10/03/25)
     implementation: De Braekeleer Mickaël (v.1 10/03/25)
     """
-    map_grid=[["🟨"]*(Size_Y+1)]*(Size_X+1)
+    map_grid=[["🟨"]*(Size_Y+1) for i in range(Size_X+1)]
+
     
     #all position for player 1 team
     pos_altar_p1=game_data["player1"]["Altar"]
@@ -188,7 +189,6 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
     for apprentice in game_data["player2"]["apprentices"]:
         pos_X=game_data["player2"]["apprentices"][apprentice]["pos"][0]
         pos_Y=game_data["player2"]["apprentices"][apprentice]["pos"][1]
-        print(pos_X, pos_Y)
         map_grid[pos_X][pos_Y]="🚺"
     for dragon in game_data["player2"]["dragon"]:
         pos_X=game_data["player2"]["dragon"][dragon]["pos"][0]
@@ -217,6 +217,10 @@ def display(game_data: dict):
     Size_X = game_data["map"][0]
     Size_Y = game_data["map"][1]
     
+    #initial pos
+    x=float(1)
+    y=int(1)
+    
     map_grid=generate_map_grid(Size_X, Size_Y, game_data)
     
     
@@ -229,7 +233,7 @@ def display(game_data: dict):
     
 
     #maximum vertical size of display
-    max_size_Y=max(Size_Y*3+1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
+    max_size_Y=max(Size_Y*2+1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
                                    4+len(game_data["player2"]["apprentices"])+len(game_data["player2"]["dragon"]),))
     
     #maximum horiziontal size of left display brackets
@@ -247,7 +251,7 @@ def display(game_data: dict):
             
         #generate Array
         #if line=no info case
-        if line%3==0:
+        if line%2==0:
             for cases in range (game_data["map"][0]*3):
                 if cases%3==0:
                     print("+",end="")
@@ -260,7 +264,13 @@ def display(game_data: dict):
                 if cases%3==0:
                     print("|",end="")
                 else:
-                    print(f"{map_grid[line//3-1][cases//3-1]}",end="")
+                    if custom_len(map_grid[int(x)][y])==2 and int(x)==float(x):
+                        print(f"{map_grid[int(x)][y]}",end="")
+                    elif int(x)==float(x):
+                        print(f"{map_grid[int(x)][y]}"*2,end="")
+                    x+=0.5
+            x=float(1)
+            y+=1
             print("|",end="")
         
         #print player 2 info brackets
