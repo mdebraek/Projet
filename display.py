@@ -93,7 +93,7 @@ def info_bracket(player:str,game_data: dict)->list:
     player_info=[]
     
     #Add altar position to the brackets
-    player_info.append("-Altar:")
+    player_info.append("-Altar🏰:")
     position=game_data[player]["Altar"]
     player_info.append(f"   >pos : {position[0]} {position[1]}")
     #Add time for next call to the brackets
@@ -131,6 +131,7 @@ def info_bracket(player:str,game_data: dict)->list:
         #temporary variable for position of the character 
         position=game_data[player]["dragon"][dragon]["pos"]
         player_info.append(f"   >pos    : {position[0]} {position[1]} ")
+    
     return player_info
 
 def custom_len(word:str)->int:
@@ -138,11 +139,11 @@ def custom_len(word:str)->int:
 
     Parameters
     ----------
-    word
+    word : any string (str)
 
     Returns
     -------
-    count
+    count : number of character of the word (int)
     
     Version
     -------
@@ -151,7 +152,7 @@ def custom_len(word:str)->int:
     """
     count=0
     for char in word:
-        if char in "🚹🚺🐉🟨🏰":
+        if char in "🚹🚺🐉🟨🏰🥚":
             count+=2
         else:
             count+=1
@@ -162,9 +163,14 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
 
     Parameters
     ----------
+    Size_X : size in X of the map (int)
+    Size_Y : size in Y of the map (int)
+    game_data : dictionnary of all game data(dict)
 
     Returns
     -------
+    map_grid : list of list with emoji for each tiles of the map (list)
+    
     specification: De Braekeleer Mickaël (v.1 10/03/25)
     implementation: De Braekeleer Mickaël (v.1 10/03/25)
     """
@@ -194,7 +200,11 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
         pos_X=game_data["player2"]["dragon"][dragon]["pos"][0]
         pos_Y=game_data["player2"]["dragon"][dragon]["pos"][1]
         map_grid[pos_X][pos_Y]="🐉"
-    
+    for egg in game_data["eggs"]:
+        pos_X=game_data["eggs"][egg]["pos"][0]
+        pos_Y=game_data["eggs"][egg]["pos"][1]
+        map_grid[pos_X][pos_Y]="🥚"
+        
     return map_grid
     
 
