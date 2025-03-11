@@ -152,7 +152,7 @@ def custom_len(word:str)->int:
     """
     count=0
     for char in word:
-        if char in "🚹🚺🐉🟨🏰🥚":
+        if char in "🚹🚺🐉🟩🟨🏰🥚":
             count+=2
         else:
             count+=1
@@ -174,7 +174,7 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
     specification: De Braekeleer Mickaël (v.1 10/03/25)
     implementation: De Braekeleer Mickaël (v.1 10/03/25)
     """
-    map_grid=[["🟨"]*(Size_Y+1) for i in range(Size_X+1)]
+    map_grid=[["🟩"]*(Size_Y+1) for i in range(Size_X+1)]
 
     
     #all position for player 1 team
