@@ -313,34 +313,32 @@ def Get_orders(game_data:dict, player:str) -> list:
 
     orders=input(f"{player}, veuillez entrer votre ordre ->")
 
-    order=orders.split(" ")
+    orders=orders.split(" ")
     for order in orders:
-         
         if "summon" in order:
             orders_player.append(order)
                       
         elif ':' in order:
             check=order.split(":")
-            
-
-            if (check[1][0]=="@" 
-            and check[1][1].isdigit() 
-            and check[1][2]=="-" 
-            and check[1][3].isdigit()
+            if check[1][0]=="@" and '-' in check[1]: 
+                check[1]=check[1].strip("@")
+                check_temp=check[1].split("-")
+            if (check_temp[0].isdigit() 
+            and check_temp[1].isdigit()
             and check[0] in game_data[player]["apprentices"]):
                 orders_player.append(order)
                  
             
-                if check[0] in game_data[player]["dragon"]:
-                   if (check[1][0]=="@" 
-                    and check[1][1].isdigit() 
-                    and check[1][2]=="-" 
-                    and check[1][3].isdigit()
-                    and check[0] in game_data[player]["dragon"]):
-                       orders_player.append(order)
+            if check[0] in game_data[player]["dragon"]:
+                if check[1][0]=="@" and '-' in check[1]: 
+                    check[1]=check[1].strip("@")
+                    check_temp=check[1].split("-")
+                
+                if check_temp[0].isdigit() and check_temp[1].isdigit():
+                    orders_player.append(order)
                        
-                   elif check[1] in {"xN","xNE","xE","xSE","xS","xSW","xW","xNW"}:
-                       orders_player.append(order)
+                if check[1] in {"xN","xNE","xE","xSE","xS","xSW","xW","xNW"}:
+                    orders_player.append(order)
         
     return  orders_player
 
