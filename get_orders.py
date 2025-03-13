@@ -34,11 +34,11 @@ def Get_orders(game_data:dict) -> list:
                   elif ':' in order:
                         check=order.split(":")
 
-                            if check[1][0]=="@" 
-                            and check[1][1].isdigit() 
-                            and check[1][2]=="-" 
-                            and check[1][3].isdigit()
-                            and check[0] in game_data[player]["apprentices"]:
+                        if (check[1][0]=="@" 
+                        and check[1][1].isdigit() 
+                        and check[1][2]=="-" 
+                        and check[1][3].isdigit()
+                        and check[0] in game_data[player]["apprentices"]):
                                  list_player.append(order)
                  
                         elif check[0] in game_data[player]["dragon"]:
@@ -50,4 +50,3 @@ def Get_orders(game_data:dict) -> list:
         
 
     return  orders_player_1,orders_player_2
-                       
