@@ -12,10 +12,12 @@ def regeneration(game_data):
     -------
     specification: Hamza SOSSEY-ALAOUI (v.1 20/02/25)
     """
-    dict_ofapp1=game_data['player1']['apprentices'] 
-    dict_ofapp2=game_data['player2']['apprentices']
-    dict_ofapps={**dict_ofapp1,**dict_ofapp2}
-    for apprentice in dict_ofapps:
+    all_app1=game_data['player1']['apprentices'] 
+    all_app2=game_data['player2']['apprentices']
+    allapps=[]
+    allapps.append(all_app1)
+    allapps.append(all_app2)
+    for apprentice in allapps:
         reg_app=apprentice['regeneration']
         curr_hea_app=apprentice['current_health']
         pv_app=apprentice['max_health']
@@ -28,10 +30,12 @@ def regeneration(game_data):
             else:
                 curr_hea_app+=hea_diff
     
-    dict_ofdrag1=game_data['player1']['dragon'] 
-    dict_ofdrag2=game_data['player2']['dragon']
-    dict_ofdrags={**dict_ofdrag1,**dict_ofdrag2}
-    for dragon in dict_ofdrags:
+    all_drag1=game_data['player1']['dragon'] 
+    all_drag2=game_data['player2']['dragon']
+    alldrags=[]
+    alldrags.append(all_drag1)
+    alldrags.append(all_drag2) 
+    for dragon in alldrags:
         reg_drag=dragon['regeneration']
         curr_hea_drag=dragon['current_health']
         pv_drag=dragon['max_health']
