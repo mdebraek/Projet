@@ -109,4 +109,4 @@ def attack(game_data):
                         if 'NW' in order:
                             if ((pos_dragonite[0] == posistion[0]) -1 and (pos_dragonite[1] == posistion[1] +1)) or ((pos_dragonite[0] == posistion[0]) -2 and (pos_dragonite[1] == posistion[1] +2)):
                                 health_dragonite -=damage
-                
+    return game_data
