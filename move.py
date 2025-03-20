@@ -1,4 +1,4 @@
-def move(orders, game_data):
+def move(orders:list, game_data:dict)->dict:
     """Move an apprentice or a dragon if move is possible 
     
     parameters
