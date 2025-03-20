@@ -1,49 +1,60 @@
 def move(orders, game_data):
-    """Déplace un apprenti ou un dragon et vérifie si le mouvement est valide.
+    """Move an apprentice or a dragon if move is possible 
     
-    Paramètres:
+    parameters
     ----------
-    orders : list
-        Liste des ordres de mouvement.
-    game_data : dict
-        Dictionnaire contenant les données du jeu.
+    orders : list of player orders (list)
+    game_data : dictionnary of dictionnary that contain all game data about player and the map (dict)
         
-    Retourne:
+    return
+    ------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map after move (dict)
+    
+    Version
     -------
-    game_data : dict
-        Dictionnaire mis à jour des données du jeu.
+    specification: 
+    implementation: 
     """
     
-    # Récupère le nombre de lignes et de colonnes  à partir de game_data
+    # Retrieve the number of rows and columns from game_data
     max_rows = game_data['map'][0]  
     max_cols = game_data['map'][1]  
+    
+
     for order in orders:  
-        if ':@' in order:  # Vérifie si l'ordre contient le séparateur ':@'
-            # Sépare l'ordre en deux parties  l'élément et la position
+        if ':@' in order:  #Check if the order contains the ':@' separator
+            #Split the order into two parts: the element and the position
             order.split(':@')
             element = order[0]
-            position = order [1]  
-            position_list = position.split('-')  # Sépare la position en deux parties : ligne et colonne
+            position = order[1]  
+            position_list = position.split('-')  # Split the position into two parts: row and column
             row = position_list[0]  
             col = position_list[1]
-            # Vérifier si la position est dans les limitesde notre tableaux de jeux
-            if row >= 0 and row < max_rows and col >= 0 and col < max_cols:  
-                if element in game_data['positions']:  # Vérifie si l'élément existe dans les positions du jeu
-                    pos_actuel = game_data['positions'][element] 
-                    # la ligne et colonne actuel de notre element 
-                    current_row = pos_actuel[0]  
-                    current_col = pos_actuel[1]  
-                    
-                    # Vérifier si le mouvement s'effectue que d'une case (une case vers le bas , vers le haut , une case vers droit , une case vers gauche )
-                    if (current_row + 1 == row and current_col == col)  or \
-                       (current_row - 1 == row and current_col == col) or \
-                       (current_row == row and current_col + 1 == col) or \
-                       (current_row == row and current_col - 1 == col):  
-                         # Met à jour la position de l'élément dans game_data
-                        game_data['positions'][element] = (row, col) 
-                    else:
-                        print(f"Mouvement not valid.")  
+            pos=[0, 0]
+            path=False
+            
+            #Check if entity is a dragon or an apprentice and add their pos path
+            if element in game_data["player1"]["apprentices"] or element in game_data["player2"]["apprentices"]:
+                if element in game_data["player1"]["apprentices"]:
+                    path=["player1", "apprentices", "pos"]
                 else:
-                    print(f"this move cant be accept because its out of the game_table.")  
-                
+                    path=["player2", "apprentices", "pos"]
+            elif element in game_data["player1"]["dragon"] or element in game_data["player2"]["dragon"]:
+                if element in game_data["player1"]["dragon"]:
+                    path=["player1", "dragon", "pos"]
+                else:
+                    path=["player2", "dragon", "pos"]      
+                    
+            #check if entity exist (path exist)
+            if path!=False:          
+                #Check if the position is within the game board limits
+                if row >= 0 and row < max_rows and col >= 0 and col < max_cols:            
+                    pos=game_data[path[0]][path[1]][path[2]] 
+                    current_row=pos[0]
+                    current_col=pos[1] 
+                    #Check if the movement is only one cell (only on step in every direction)
+                    if ((current_row+1==row or current_row==row or current_row-1==row) and 
+                        (current_col+1==col or current_col==col or current_col-1==col)):
+                        #Update the position of the element in game_data
+                        game_data[path[0]][path[1]][path[2]]  = [row, col]      
     return game_data  
