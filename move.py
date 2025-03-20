@@ -17,17 +17,15 @@ def move(orders, game_data):
     # Récupère le nombre de lignes et de colonnes  à partir de game_data
     max_rows = game_data['map'][0]  
     max_cols = game_data['map'][1]  
-    
-   
     for order in orders:  
         if ':@' in order:  # Vérifie si l'ordre contient le séparateur ':@'
             # Sépare l'ordre en deux parties  l'élément et la position
-            element = order.split(':@')
-            position = order.split(':@')  
-            position_list = position.split('=')  # Sépare la position en deux parties : ligne et colonne
+            order.split(':@')
+            element = order[0]
+            position = order [1]  
+            position_list = position.split('-')  # Sépare la position en deux parties : ligne et colonne
             row = position_list[0]  
-            col = position_list[1]  
-
+            col = position_list[1]
             # Vérifier si la position est dans les limitesde notre tableaux de jeux
             if row >= 0 and row < max_rows and col >= 0 and col < max_cols:  
                 if element in game_data['positions']:  # Vérifie si l'élément existe dans les positions du jeu
