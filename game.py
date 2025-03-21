@@ -340,7 +340,7 @@ def Get_orders(game_data:dict, player:str) -> list:
                 if check[1] in {"xN","xNE","xE","xSE","xS","xSW","xW","xNW"}:
                     orders_player.append(order)
         
-    return  orders_player
+    return  orders
 
 def get_AI_orders(game_data:dict, player:str)->list:
     """get random AI orders (basic)
@@ -390,7 +390,7 @@ def get_AI_orders(game_data:dict, player:str)->list:
             
     return orders 
     
-def action(game_data:dict , orders_player, orders:list)->dict :
+def action(game_data:dict ,orders:list)->dict :
     """General function which calls the subfunctions to perform the different actions of the game
     
     Parameters
