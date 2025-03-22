@@ -101,7 +101,7 @@ def info_bracket(player:str,game_data: dict)->list:
     #Add time for next summon to the brackets
     Cooldown_Summon=game_data[player]["summon"]
     if Cooldown_Summon==0:
-        player_info.append("Appel disponnible")
+        player_info.append("Appel disponible")
     else:
         player_info.append(f"Appel : {Cooldown_Summon} tours")
            
