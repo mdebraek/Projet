@@ -390,7 +390,7 @@ def get_AI_orders(game_data:dict, player:str)->list:
             
     return orders 
     
-def action(game_data:dict ,orders:list)->dict :
+def action(game_data:dict , player:str,orders:list)->dict :
     """General function which calls the subfunctions to perform the different actions of the game
     
     Parameters
@@ -407,27 +407,36 @@ def action(game_data:dict ,orders:list)->dict :
     specification: Aymane el abbassi (v.1 20/02/25)
     implementation: Hamza Sossey-Alaoui (v.1 17/03/25)
     """
-
-    entity_occupied=[]
-    sort=False
     
-    #don't do anything if no orders
+    entity_occupied=[]
+    move_orders=[]
+    attack_orders=[]
+    
+    #don't do anything if no orders (optimisation)
     if len(orders)!=0:
-        #execute the orders
+        #execute summon order
         if "summon" in orders:
-            game_data=summon(game_data)
+            game_data=summon(game_data, player)
             #delete all summon from the list
             orders=[summon for summon in orders if summon != "summon"]
         else:
-            for order in orders:
-                
+            #sort orders
+            for order in orders:             
                 order_split=order.split(":")
+                #if entity not already doing something
                 if not order_split[0] in entity_occupied:
                     if "@" in order:
-                        game_data=move(game_data, order)
+                        move_orders.append(order)
                     elif "x" in order_split[1]:
-                        game_data=attack(game_data, order)  
+                        attack_orders.append(order)
                     entity_occupied.append(order.split(":")[0])
+            #execute attack
+            for attack in attack_orders:
+                game_data=attack(game_data, player, attack)
+            #execute move
+            for movement in move_orders:
+               game_data=move(game_data, player, movement)
+                                  
         return game_data
 
 def summon(game_data:dict, player:str)->dict:
