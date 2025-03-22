@@ -408,28 +408,59 @@ def action(game_data:dict ,orders:list)->dict :
     implementation: Hamza Sossey-Alaoui (v.1 17/03/25)
     """
 
-    for order in orders_player:
+    entity_occupied=[]
+    sort=False
+    
+    #don't do anything if no orders
+    if len(orders)!=0:
+        #execute the orders
+        if "summon" in orders:
+            game_data=summon(game_data)
+            #delete all summon from the list
+            orders=[summon for summon in orders if summon != "summon"]
+        else:
+            for order in orders:
+                
+                order_split=order.split(":")
+                if not order_split[0] in entity_occupied:
+                    if "@" in order:
+                        game_data=move(game_data, order)
+                    elif "x" in order_split[1]:
+                        game_data=attack(game_data, order)  
+                    entity_occupied.append(order.split(":")[0])
+        return game_data
 
-    #1st action
-    call(game_data)
-    #2nd action
-    hatch_egg(game_data)
-    #3rd action
-    attack(game_data)
-    #4th action
-    move(orders,game_data)
-    #5th action
-    regeneration(game_data)
+def summon(game_data:dict, player:str)->dict:
+    """The function to use the special ability of the player
+
+    Parameters
+    ----------
+    game_data : Data structure of the game (dict)
+    
+    Returns
+    -------
+    game_data : dictionnary of all game data after the call (dict)
+    
+    Version
+    -------
+    specification: Hamza SOSSEY-ALAOUI (20/02/25)
+    implementation: Hamza SOSSEY-ALAOUI(v1 15/03/25)
+    implementation: Mitta kylian(v2 17/03/25)
+    """
+    # takes positions of the altar
+    pos_altar_y,pos_altar_x=game_data[player]['altars']['pos']
+
+    # move apprentices to the altar
+    for apprentice in game_data[player]["apprentices"]:
+        apprentice["pos"] = pos_altar_y,pos_altar_x
+
+    # move dragons to the altar
+    for dragon in game_data[player]["dragon"]:
+        dragon["pos"] = pos_altar_y,pos_altar_x
+        
     return game_data
 
-
-
-
-
-
-
-
-def hatch_egg(game_data):
+def hatch_egg(game_data:dict)->dict:
     """hatch eggs if apprentice are on it 
         Parametres :
         ----------
@@ -475,98 +506,7 @@ def hatch_egg(game_data):
                        
     return game_data
 
-def call(player,game_data):
-    """The function to use the special ability of the player
-
-    Parameters
-    ----------
-    game_data : Data structure of the game (dict)
-    
-    Returns
-    -------
-    game_data : dictionnary of all game data after the call (dict)
-    
-    Version
-    -------
-    specification: Hamza SOSSEY-ALAOUI (20/02/25)
-    implementation: Hamza SOSSEY-ALAOUI(v1 15/03/25)
-    implementation: Mitta kylian(v2 17/03/25)
-    """
-    # takes positions of the altar
-    pos_altar_y,pos_altar_x=game_data[player]['altars']['pos']
-
-    # move apprentices to the altar
-    for apprentice in game_data[player]["apprentices"]:
-        apprentice["pos"] = pos_altar_y,pos_altar_x
-
-    # move dragons to the altar
-    for dragon in game_data[player]["dragon"]:
-        dragon["pos"] = pos_altar_y,pos_altar_x
-        
-    return game_data
-
-
-def regeneration(game_data):
-    """The function regenerate health points to the dragons and the apprentices at the end of the turn without exceeding their max health
-    Parameters
-    ----------
-    game_data : Dictionnary of all game data (dict)
-
-    Returns
-    -------
-    game_data : dictionnary of all game data after characters regeneration (dict)
-    
-    Version
-    -------
-    specification: Hamza SOSSEY-ALAOUI (20/02/25)
-    implementation: Hamza SOSSEY-ALAOUI(16/03/25)
-    """
-    #combined all apprentices/dragons on the board
-    all_app1=game_data['player1']['apprentices'] 
-    all_app2=game_data['player2']['apprentices']
-    all_apps=[]
-    all_apps.append(all_app1)
-    all_apps.append(all_app2)
-    
-    all_drag1=game_data['player1']['dragon'] 
-    all_drag2=game_data['player2']['dragon']
-    all_drags=[]
-    all_drags.append(all_drag1)
-    all_drags.append(all_drag2) 
-
-
-    # regeneration of apprentices
-    for apprentice in all_apps:
-        reg_app=apprentice['regeneration']
-        curr_hea_app=apprentice['current_health']
-        pv_app=apprentice['max_health']
-        if curr_hea_app >= pv_app :
-            curr_hea_app=curr_hea_app
-        else:
-            hea_diff=pv_app - curr_hea_app
-            if hea_diff>=reg_app:
-                curr_hea_app+=reg_app
-            else:
-                curr_hea_app+=hea_diff
-
-    # regeneration of dragons
-    for dragon in all_drags:
-        reg_drag=dragon['regeneration']
-        curr_hea_drag=dragon['current_health']
-        pv_drag=dragon['max_health']
-        if curr_hea_drag >= pv_drag :
-            curr_hea_drag=curr_hea_drag
-        else:
-            hea_diff=pv_drag - curr_hea_drag
-            if hea_diff>=reg_drag:
-                curr_hea_drag+=reg_drag
-            else:
-                curr_hea_drag+=hea_diff
-
-
-    return game_data
-
-def attack(player,orders,game_data):
+def attack(game_data:dict, player:str, orders:list)->dict:
     """The function makes the dragon attack in the 8 directions with 2 boxes limit range
         Parameters:
         Game_Data : Data structure of the game (dict)
@@ -638,29 +578,8 @@ def attack(player,orders,game_data):
                     del game_data[the_other_player]["dragon"][dragon]
 
         return game_data
-
-
-
-def end_game(winner):
-    """ show the winner of the game 
     
-    parameters
-    ----------
-    winner : name of the winner (str)
-
-
-    specification: Mitta kylian (02/03/25)
-    implementation: Mitta kylian (21/03/25)
-    """
-
-
-    if winner=="player1":
-        print("the winner is the player 1")
-    else:
-        print("the winner is the player 2")
-
-
-def move(orders:list, game_data:dict)->dict:
+def move(game_data:dict, player:str, orders:list)->dict:
     """Move an apprentice or a dragon if move is possible 
     
     parameters
@@ -720,6 +639,86 @@ def move(orders:list, game_data:dict)->dict:
                         #Update the position of the element in game_data
                         game_data[path[0]][path[1]][path[2]]  = [row, col]      
     return game_data  
+
+def regeneration(game_data:dict)->dict:
+    """The function regenerate health points to the dragons and the apprentices at the end of the turn without exceeding their max health
+    Parameters
+    ----------
+    game_data : Dictionnary of all game data (dict)
+
+    Returns
+    -------
+    game_data : dictionnary of all game data after characters regeneration (dict)
+    
+    Version
+    -------
+    specification: Hamza SOSSEY-ALAOUI (20/02/25)
+    implementation: Hamza SOSSEY-ALAOUI(16/03/25)
+    """
+    #combined all apprentices/dragons on the board
+    all_app1=game_data['player1']['apprentices'] 
+    all_app2=game_data['player2']['apprentices']
+    all_apps=[]
+    all_apps.append(all_app1)
+    all_apps.append(all_app2)
+    
+    all_drag1=game_data['player1']['dragon'] 
+    all_drag2=game_data['player2']['dragon']
+    all_drags=[]
+    all_drags.append(all_drag1)
+    all_drags.append(all_drag2) 
+
+
+    # regeneration of apprentices
+    for apprentice in all_apps:
+        reg_app=apprentice['regeneration']
+        curr_hea_app=apprentice['current_health']
+        pv_app=apprentice['max_health']
+        if curr_hea_app >= pv_app :
+            curr_hea_app=curr_hea_app
+        else:
+            hea_diff=pv_app - curr_hea_app
+            if hea_diff>=reg_app:
+                curr_hea_app+=reg_app
+            else:
+                curr_hea_app+=hea_diff
+
+    # regeneration of dragons
+    for dragon in all_drags:
+        reg_drag=dragon['regeneration']
+        curr_hea_drag=dragon['current_health']
+        pv_drag=dragon['max_health']
+        if curr_hea_drag >= pv_drag :
+            curr_hea_drag=curr_hea_drag
+        else:
+            hea_diff=pv_drag - curr_hea_drag
+            if hea_diff>=reg_drag:
+                curr_hea_drag+=reg_drag
+            else:
+                curr_hea_drag+=hea_diff
+
+
+    return game_data
+
+
+
+def end_game(winner):
+    """ show the winner of the game 
+    
+    parameters
+    ----------
+    winner : name of the winner (str)
+
+
+    specification: Mitta kylian (02/03/25)
+    implementation: Mitta kylian (21/03/25)
+    """
+
+
+    if winner=="player1":
+        print("the winner is the player 1")
+    else:
+        print("the winner is the player 2")
    
 # main function
 def play_game(map_path, group_1, type_1, group_2, type_2):
@@ -779,6 +778,9 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
             orders = get_AI_orders(game_data, 2)
         if type_1 == 'remote':
             notify_remote_orders(connection, orders)
+        
+        game_data=regeneration(game_data)
+        game_data=hatch_egg(game_data)
             
         display(game_data)
         time.sleep(1)
