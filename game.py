@@ -805,5 +805,3 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
 #program
 map_path="C:/Users/coram/OneDrive/Desktop/projet/map.drk"       
 play_game(map_path, 6, "human", 6, "AI")
-
-
