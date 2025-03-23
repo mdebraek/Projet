@@ -179,7 +179,8 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
     specification: De Braekeleer Mickaël (10/03/25)
     implementation: De Braekeleer Mickaël (10/03/25)
     """
-    map_grid=[["🟥"]*(Size_X+1) for i in range(Size_Y+1)]
+    
+    map_grid=[["🟥"]*(Size_X+2) for i in range(Size_Y+2)]
 
     #for all player
     for player in ["player1", "player2"]:
@@ -189,8 +190,10 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
         for apprentice in game_data[player]["apprentices"]:
             pos_X=game_data[player]["apprentices"][apprentice]["pos"][1]
             pos_Y=game_data[player]["apprentices"][apprentice]["pos"][0]
-            
-            map_grid[pos_X][pos_Y]="🚹"
+            if player=="player1":
+                map_grid[pos_X][pos_Y]="🚹"
+            else:
+                map_grid[pos_X][pos_Y]="🚺"          
         for dragon in game_data[player]["dragon"]:
             pos_X=game_data[player]["dragon"][dragon]["pos"][1]
             pos_Y=game_data[player]["dragon"][dragon]["pos"][0]
@@ -313,7 +316,7 @@ def Get_orders(game_data:dict, player:str) -> list:
             orders_player.append(order)
                       
         elif ':' in order:
-            try:
+            if len(check) > 1 and check[1]:
                 check=order.split(":")
                 if check[1][0]=="@" and '-' in check[1]: 
                     check[1]=check[1].strip("@")
@@ -334,8 +337,6 @@ def Get_orders(game_data:dict, player:str) -> list:
                         
                     if check[1] in {"xN","xNE","xE","xSE","xS","xSW","xW","xNW"}:
                         orders_player.append(order)
-            except:
-                print("", end="")
         
     return  orders_player
 
