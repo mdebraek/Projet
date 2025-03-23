@@ -494,26 +494,31 @@ def hatch_egg(game_data:dict)->dict:
         implementation: Aymane el abbassi(v1 15/03/25)
         implementation: Mitta Kylian (v2 19/03/25)
     """
+    
+    egg_to_delete=[]
+    
      # loop for each player
     for player in ['player1', 'player2']:
 
-        # loop for each egg on the board
-        for egg in game_data["eggs"]:
-
-            # loop for each apprentice of the player
-            for apprentice in game_data[player]['apprentices']:
+        # loop for each apprentice of the player
+        for apprentice in game_data[player]['apprentices']:
+                
+            # loop for each egg on the board
+            for egg in game_data["eggs"]:
 
                 # check if the positions are identical
-                if game_data[player]['apprentices'][apprentice]['pos'] == game_data["eggs"][egg]['pos']: 
+                if game_data[player]['apprentices'][apprentice]['pos'] == game_data["eggs"][egg]["pos"]: 
                     game_data["eggs"][egg]['time_to_hatch'] -= 1
-                    if game_data["eggs"][egg]['time_to_hatch']== 0:
+                    if game_data["eggs"][egg]['time_to_hatch'] == 0:
 
                         # hatching
-                        game_data[player]["dragon"][egg]=game_data[player]["eggs"][egg]
-
-                        # delete the old egg and time to hatch stats
-                        del game_data["eggs"][egg]
-                        del game_data[player]["dragon"][egg]["time_to_hatch"]
+                        game_data[player]["dragon"][egg]={}
+                        game_data[player]["dragon"][egg]=game_data["eggs"][egg]
+                        
+    for egg in egg_to_delete:
+        # delete the old egg and time to hatch stats
+        del game_data["eggs"][egg]
+        del game_data[player]["dragon"][egg]["time_to_hatch"]
 
                        
     return game_data
@@ -757,3 +762,4 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
 #program
 map_path="C:/Users/coram/OneDrive/Desktop/projet/map.drk"       
 play_game(map_path, 6, "human", 6, "AI")
+
