@@ -112,15 +112,15 @@ def info_bracket(player:str,game_data: dict)->list:
     for apprentice in game_data[player]["apprentices"]:
         if not have_apprentice:
             if int(player[-1])==1:
-                player_info.append(f"-Apprenti🚹:")
+                player_info.append(f'-Apprenti🚹:')
             else:
-                player_info.append(f"-Apprenti🚺:")
+                player_info.append(f'-Apprenti🚺:')
             have_apprentice=True
-        player_info.append(f"   -{apprentice} :")
-        player_info.append(f"   >PV  : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}")
+        player_info.append(f'   -{apprentice} :')
+        player_info.append(f'   >PV  : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}')
         #temporary variable for position of the character 
         position=game_data[player]["apprentices"][apprentice]["pos"]
-        player_info.append(f"   >pos : {position[0]} {position[1]} ")
+        player_info.append(f'   >pos : {position[0]} {position[1]} ')
         
     #Browse each dragon of a player and add their info to the brackets
     have_dragon=False
@@ -128,13 +128,14 @@ def info_bracket(player:str,game_data: dict)->list:
         if not have_dragon:
             player_info.append(f"-Dragon🐉:")
             have_dragon=True
-        player_info.append(f"   -{dragon}:")
-        player_info.append(f"   >PV     : {game_data[player]["dragon"][dragon]["current_health"]}/{game_data[player]["dragon"][dragon]["max_health"]}")
-        player_info.append(f"   >Dégats : {game_data[player]["dragon"][dragon]["attack_damage"]}")
-        player_info.append(f"   >Portée : {game_data[player]["dragon"][dragon]["attack_range"]}")
+        player_info.append(f'   -{dragon}:')
+        player_info.append(f'   >PV     : {game_data[player]["dragon"][dragon]["current_health"]}/{game_data[player]["dragon"][dragon]["max_health"]}')
+        player_info.append(f'   >Dégats : {game_data[player]["dragon"][dragon]["attack_damage"]}')
+        player_info.append(f'   >Portée : {game_data[player]["dragon"][dragon]["attack_range"]}')
         #temporary variable for position of the character 
         position=game_data[player]["dragon"][dragon]["pos"]
-        player_info.append(f"   >pos    : {position[0]} {position[1]} ")
+        player_info.append(f'   >pos    : {position[0]} {position[1]}')
+        
     return player_info
 
 def custom_len(word:str)->int:
@@ -316,27 +317,30 @@ def Get_orders(game_data:dict, player:str) -> list:
             orders_player.append(order)
                       
         elif ':' in order:
-            if len(check) > 1 and check[1]:
-                check=order.split(":")
-                if check[1][0]=="@" and '-' in check[1]: 
-                    check[1]=check[1].strip("@")
-                    check_temp=check[1].split("-")
-                if (check_temp[0].isdigit() 
-                and check_temp[1].isdigit()
-                and check[0] in game_data[player]["apprentices"]):
-                    orders_player.append(order)
-                    
-                
-                if check[0] in game_data[player]["dragon"]:
-                    if check[1][0]=="@" and '-' in check[1]: 
-                        check[1]=check[1].strip("@")
-                        check_temp=check[1].split("-")
-                    
-                    if check_temp[0].isdigit() and check_temp[1].isdigit():
-                        orders_player.append(order)
-                        
-                    if check[1] in {"xN","xNE","xE","xSE","xS","xSW","xW","xNW"}:
-                        orders_player.append(order)
+            check = order.split(":")
+
+            if len(check) > 1: 
+                if check[1]:
+                    check_temp = []
+                    if check[1][0] == "@" and '-' in check[1]: 
+                        check[1] = check[1].strip("@")
+                        check_temp = check[1].split("-")
+
+                    if len(check_temp) > 1 and check_temp[0].isdigit() and check_temp[1].isdigit():
+                        if check[0] in game_data[player]["apprentices"]:
+                            orders_player.append(order)
+
+                    if check[0] in game_data[player]["dragon"]:
+                        if check[1][0] == "@" and '-' in check[1]: 
+                            check[1] = check[1].strip("@")
+                            check_temp = check[1].split("-")
+
+                        if len(check_temp) > 1 and check_temp[0].isdigit() and check_temp[1].isdigit():
+                            orders_player.append(order)
+
+                        if check[1] in {"xN", "xNE", "xE", "xSE", "xS", "xSW", "xW", "xNW"}:
+                            orders_player.append(order)
+
         
     return  orders_player
 
@@ -388,7 +392,7 @@ def get_AI_orders(game_data:dict, player:str)->list:
             
     return orders 
     
-def action(game_data:dict , player:str,orders:list)->dict :
+def action(game_data:dict , all_orders:list)->dict :
     """General function which calls the subfunctions to perform the different actions of the game
     
     Parameters
@@ -406,42 +410,46 @@ def action(game_data:dict , player:str,orders:list)->dict :
     implementation: Hamza Sossey-Alaoui (v.1 17/03/25)
     implementation: Mitta Kylian, De Braekeleer Mickaël( v.2 22/03/25)
     """
-    
-    entity_occupied=[]
-    move_orders=[]
-    attack_orders=[]
-    
-    print(orders)
-    print(len(orders))
-    #don't do anything if no orders (optimisation)
-    if not (len(orders)==1 and orders[0]==""):
-        #execute summon order
-        if "summon" in orders:
-            #delete all summon from the list
-            orders=[summon for summon in orders if summon != "summon"]
-            if game_data[player]["summon"]==0:
-                game_data[player]["summon"]=int(10)
-                game_data=summon(game_data, player)
-                print(orders)
+    for player in ["player1", "player2"]:
+        entity_occupied=[]
+        move_orders=[]
+        attack_orders=[]
+        
+        if player=="player1":
+            orders=all_orders[0]
         else:
-            #sort orders
-            for order in orders:             
-                order_split=order.split(":")
-                #if entity not already doing something
-                if not order_split[0] in entity_occupied:
-                    if "@" in order:
-                        move_orders.append(order)
-                    elif "x" in order_split[1]:
-                        attack_orders.append(order)
-                    entity_occupied.append(order.split(":")[0])
-            #execute attack
-            for attack in attack_orders:
-                game_data=attack(game_data, player, attack)
-            #check if some entity are dead
-            game_data=check_death(game_data)
-            #execute move
-            for movement in move_orders:
-                game_data=move(game_data, player, movement)
+            orders=all_orders[1]
+            
+        #don't do anything if no orders (optimisation)
+        if not (len(orders)==1 and orders[0]==""):
+            #execute summon order
+            if "summon" in orders:
+                #delete all summon from the list
+                orders=[summon for summon in orders if summon != "summon"]
+                if game_data[player]["summon"]==0:
+                    game_data[player]["summon"]=int(10)
+                    game_data=summon(game_data, player)
+                    print(orders)
+            else:
+                #sort orders
+                for order in orders:             
+                    order_split=order.split(":")
+                    #if entity not already doing something
+                    if not order_split[0] in entity_occupied:
+                        if "@" in order:
+                            move_orders.append(order)
+                        elif "x" in order_split[1]:
+                            attack_orders.append(order)
+                        entity_occupied.append(order.split(":")[0])
+                #execute attack
+                for attacks in attack_orders:
+                    game_data=attack(game_data, player, attacks)
+                #execute move
+                for movement in move_orders:
+                    game_data=move(game_data, player, movement)
+                    
+    #check if some entity are dead
+    game_data=check_death(game_data)
                                   
     return game_data
 
@@ -478,22 +486,25 @@ def summon(game_data:dict, player:str)->dict:
     return game_data
 
 def hatch_egg(game_data:dict)->dict:
-    """hatch eggs if apprentice are on it 
-        Parametres :
-        ----------
-        game_data : dic of all the game(dic)
-        Returns
-        -------
-        game_data: dictionnary of all the game_data after a potentially hatching eggs (dic)
-        Version 
-        -------
-        specification : Aymane el abbassi(20/02/2025)
-        implementation: Aymane el abbassi(v1 15/03/25)
-        implementation: Mitta Kylian (v2 19/03/25)
+    """hatch eggs if apprentices are on it 
+    
+    Parameters :
+    ----------
+    game_data : dict of all the game(dict)
+    
+    Returns
+    -------
+    game_data: dictionnary of all the game_data after a potentially hatching eggs (dic)
+    
+    Version 
+    -------
+    specification : Aymane el abbassi(20/02/2025)
+    implementation: Aymane el abbassi(v1 15/03/25)
+    implementation: Mitta Kylian (v2 19/03/25)
     """
     
     
-     # loop for each player
+    # loop for each player
     for player in ['player1', 'player2']:
         
         egg_to_delete=[]
@@ -507,7 +518,7 @@ def hatch_egg(game_data:dict)->dict:
                 # check if the positions are identical
                 if game_data[player]['apprentices'][apprentice]['pos'] == game_data["eggs"][egg]["pos"]: 
                     game_data["eggs"][egg]['time_to_hatch'] -= 1
-                    if game_data["eggs"][egg]['time_to_hatch'] == 0:
+                    if game_data["eggs"][egg]['time_to_hatch'] < 1:
 
                         # hatching
                         game_data[player]["dragon"][egg]={}
@@ -515,8 +526,7 @@ def hatch_egg(game_data:dict)->dict:
                         game_data[player]["dragon"][egg]["linked_apprentice"]=apprentice
                         game_data[player]["apprentices"][apprentice]["linked_dragon"].append(egg)
                         egg_to_delete.append(egg)
-                        
-                        
+                             
         for egg in egg_to_delete:
             # delete the old egg and time to hatch stats
             del game_data["eggs"][egg]
@@ -542,32 +552,35 @@ def attack(game_data:dict, player:str, order:str)->dict:
         implementation: Hamza SOSSEY-ALAOUI (v.1 17/03/25)
         implementation: Mitta Kylian, De Braekeleer Mickaël( v.2 22/03/25)
     """
+    order=order.split(":")
     if order[0] in game_data[player]["dragon"]:
         
         damage=game_data[player]["dragon"][order[0]]['attack_damage']
         attack_range=game_data[player]["dragon"][order[0]]['attack_range']
-        pos_dragon_y,pos_dragon_x=game_data[player]["dragon"][order[0]]['pos']
+        position=game_data[player]["dragon"][order[0]]['pos']
+        pos_dragon_y=position[0]
+        pos_dragon_x=position[1]
         valid_tiles=[]
 
-        for check_attack in range(1,attack_range):
+        for check_attack in range(1,attack_range+1):
         
-            if order[1] == "N":
-                valid_tiles.append((pos_dragon_y-check_attack,pos_dragon_x))
-            elif order[1] == "NE":
-                valid_tiles.append((pos_dragon_y-check_attack,pos_dragon_x+check_attack))
-            elif order[1] == "E":
-                valid_tiles.append((pos_dragon_y,pos_dragon_x+check_attack))
-            elif order[1] == "SE":
-                valid_tiles.append((pos_dragon_y+check_attack,pos_dragon_x+check_attack))
-            elif order[1] == "S":
-                valid_tiles.append((pos_dragon_y+check_attack,pos_dragon_x))
-            elif order[1] == "SW":
-                valid_tiles.append((pos_dragon_y-+check_attack,pos_dragon_x-check_attack))
-            elif order[1] == "W":
-                valid_tiles.append((pos_dragon_y+check_attack,pos_dragon_x-check_attack))
-            elif order[1] == "NW":
-                valid_tiles.append((pos_dragon_y-check_attack,pos_dragon_x-check_attack))
-
+            if order[1] == "xN":
+                valid_tiles.append([pos_dragon_y-check_attack,pos_dragon_x])
+            elif order[1] == "xNE":
+                valid_tiles.append([pos_dragon_y-check_attack,pos_dragon_x+check_attack])
+            elif order[1] == "xE":
+                valid_tiles.append([pos_dragon_y,pos_dragon_x+check_attack])
+            elif order[1] == "xSE":
+                valid_tiles.append([pos_dragon_y+check_attack,pos_dragon_x+check_attack])
+            elif order[1] == "xS":
+                valid_tiles.append([pos_dragon_y+check_attack,pos_dragon_x])
+            elif order[1] == "xSW":
+                valid_tiles.append([pos_dragon_y+check_attack,pos_dragon_x-check_attack])
+            elif order[1] == "xW":
+                valid_tiles.append([pos_dragon_y,pos_dragon_x-check_attack])
+            elif order[1] == "xNW":
+                valid_tiles.append([pos_dragon_y-check_attack,pos_dragon_x-check_attack])
+                
         for player in ["player1", "player2"]:
             
             for apprentice in game_data[player]["apprentices"]:
@@ -581,7 +594,6 @@ def attack(game_data:dict, player:str, order:str)->dict:
                     game_data[player]["dragon"][dragon]['current_health'] -= damage
                     #number of turn without attack:
                     game_data["idle_turn"]=0
-
     return game_data
 
 def check_death(game_data:dict)->dict:
@@ -659,7 +671,6 @@ def move(game_data:dict, player:str, order:str)->dict:
     elif element in game_data[player]["dragon"]:
         path=[player, "dragon", element, "pos"]    
                 
-    print(path)
     #check if entity exist (path exist)
     if path!=False:          
         #Check if the position is within the game board limits
@@ -716,11 +727,55 @@ def end_game(winner):
     implementation: Mitta kylian (21/03/25)
     """
 
-
-    if winner=="player1":
-        print("the winner is the player 1")
+    
+    print("")
+    print("")
+    print("")
+    
+    if winner == "player1":
+        print("🎉 |Le Gagnant est Player 1!| 🎉")
+    elif winner == "player2":
+        print("🏆 |Le Gagnant est Player 2!| 🏆")
+    elif winner == "draw":
+        print("⚖️ |La partie s'est terminée sur une égalité !| ⚖️")
     else:
-        print("the winner is the player 2")
+        print("⏳ |La partie est finie à cause de 100 tours sans actions.| ⏳")
+    
+    print("")
+    print("")
+    print("")
+    
+def check_win(game_data:dict, game:bool)->bool:
+    """check if one of the two player won
+    
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    game: if the game is running or not (bool)
+    
+    return
+    ------
+    game: if the game is running or not (bool)
+    
+    specification: De Braekeleer Mickael (23/03/25)
+    implementation: De Braekeleer Mickael (23/03/25)
+    """
+    game=False
+    if not game_data["player1"]["apprentices"] and not game_data["player2"]["apprentices"]:
+        end_game("draw")
+    elif not game_data["player1"]["apprentices"]:
+        end_game("player2")
+    elif not game_data["player2"]["apprentices"]:
+        end_game("player1")
+    elif game_data["idle_turn"]==100:
+        end_game("no_winner")
+    else:
+        game=True
+        
+    return game
+    
+    
+
    
 # main function
 def play_game(map_path, group_1, type_1, group_2, type_2):
@@ -755,7 +810,9 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
         connection = create_connection(group_1, group_2)
         
     while game:
+        all_orders=[]
         # get orders of player 1 and notify them to player 2, if necessary
+        orders=[]
         if type_1 == 'remote':
             orders = get_remote_orders(connection)
         elif type_1 == "human":
@@ -763,13 +820,11 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
         else:
             orders = get_AI_orders(game_data, "player1")
         if type_2 == 'remote':
-            notify_remote_orders(connection, orders)
-            
-        game_data=action(game_data, "player1", orders)  
-        display(game_data)
-        time.sleep(0.5)
+            notify_remote_orders(connection, orders) 
+        all_orders.append(orders)
         
         # get orders of player 2 and notify them to player 1, if necessary
+        orders=[]
         if type_2 == 'remote':
             orders = get_remote_orders(connection)
         elif type_2 == "human":
@@ -779,25 +834,23 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
         if type_1 == 'remote':
             notify_remote_orders(connection, orders)
             
-        game_data=action(game_data, "player2", orders)  
-        display(game_data)
-        time.sleep(0.5)
+        all_orders.append(orders)
+            
+        #execute players orders
+        game_data=action(game_data,  all_orders)  
         
-        for player in ["player1", "player2"]:
-            if game_data[player]["summon"]>0:
-                game_data[player]["summon"]-=1
         game_data=regeneration(game_data)
         game_data=hatch_egg(game_data)
         game_data["idle_turn"]+=1
         
-        if game_data["idle_turn"]==100:
-            end_game("no_winner")
-        
-            
+        for player in ["player1", "player2"]:
+            if game_data[player]["summon"]>0:
+                game_data[player]["summon"]-=1
+                
         display(game_data)
         time.sleep(0.5)
         
-
+        game=check_win(game_data, game)     
 
     # close connection, if necessary
     if type_1 == 'remote' or type_2 == 'remote' and not game:
