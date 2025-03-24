@@ -35,34 +35,35 @@ def load_map(map_file_path:str)->dict:
     #search in all lines for data
     for line in range (len(raw_data)):
         if raw_data[line].split(":")[0] =="altars":
+            #get all altar info
             info=raw_data[line+1].split(" ")
             game_data["player1"]["altars"]=[int(info[1]), int(info[2])]
             info=raw_data[line+2].split(" ")
             game_data["player2"]["altars"]=[int(info[1]), int(info[2])]      
         elif raw_data[line].split(":")[0] =="map":
+            #get map size
             info=raw_data[line+1].split(" ")
             game_data["map"]=[int(info[0]), int(info[1])]
         elif raw_data[line].split(":")[0] == "apprentices":
             line+=1
             while raw_data[line].split(":")[0] !="eggs":
                 info=raw_data[line].split(" ")
+                #check if apprentice belongs to player 1 or player2
                 if int(info[0])==1:
-                    game_data["player1"]["apprentices"][info[1]]={}
-                    game_data["player1"]["apprentices"][info[1]]["pos"]=[int(info[2]), int(info[3])]
-                    game_data["player1"]["apprentices"][info[1]]["max_health"]=int(info[4])
-                    game_data["player1"]["apprentices"][info[1]]["current_health"]=int(info[4])
-                    game_data["player1"]["apprentices"][info[1]]["regeneration"]=int(info[5][0:1])
-                    game_data["player1"]["apprentices"][info[1]]["linked_dragon"]=[]
+                    player="player1"
                 else:
-                    game_data["player2"]["apprentices"][info[1]]={}
-                    game_data["player2"]["apprentices"][info[1]]["pos"]=[int(info[2]), int(info[3])]
-                    game_data["player2"]["apprentices"][info[1]]["max_health"]=int(info[4])
-                    game_data["player2"]["apprentices"][info[1]]["current_health"]=int(info[4])
-                    game_data["player2"]["apprentices"][info[1]]["regeneration"]=int(info[5][0:1])
-                    game_data["player2"]["apprentices"][info[1]]["linked_dragon"]=[]      
+                    player="player2"
+                #get apprentices info
+                game_data[player]["apprentices"][info[1]]={}
+                game_data[player]["apprentices"][info[1]]["pos"]=[int(info[2]), int(info[3])]
+                game_data[player]["apprentices"][info[1]]["max_health"]=int(info[4])
+                game_data[player]["apprentices"][info[1]]["current_health"]=int(info[4])
+                game_data[player]["apprentices"][info[1]]["regeneration"]=int(info[5][0:1])
+                game_data[player]["apprentices"][info[1]]["linked_dragon"]=[]   
                 line+=1
         elif raw_data[line].split(":")[0]=="eggs":
             for eggs in range (len(raw_data)-line):
+                #get all egg info
                 line+=1
                 info=raw_data[line].split(" ")
                 game_data["eggs"][info[0]]={}
@@ -73,7 +74,8 @@ def load_map(map_file_path:str)->dict:
                 game_data["eggs"][info[0]]["attack_damage"]=int(info[5])
                 game_data["eggs"][info[0]]["attack_range"]=int(info[6])
                 game_data["eggs"][info[0]]["regeneration"]=int(info[7][0:1])
-                if line == len(raw_data)-1:  
+                if line == len(raw_data)-1:
+                    #return game_data with all map info  
                     return game_data
                 
 def info_bracket(player:str,game_data: dict)->list:
@@ -154,8 +156,10 @@ def custom_len(word:str)->int:
     specification: De Braekeleer Mickaël (07/03/25)
     implementation: De Braekeleer Mickaël (07/03/25)
     """
+    #init count
     count=0
     for char in word:
+        #custom filter filled emoji maybe used in the program
         if char in "🚹🚺🐉🟨🏰🥚🟩🟥":
             count+=2
         else:
@@ -189,17 +193,21 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
         pos_altar_p1=game_data[player]["altars"]
         map_grid[pos_altar_p1[1]][pos_altar_p1[0]]="🏰"
         for apprentice in game_data[player]["apprentices"]:
+            #get apprentice pos
             pos_X=game_data[player]["apprentices"][apprentice]["pos"][1]
             pos_Y=game_data[player]["apprentices"][apprentice]["pos"][0]
+            #place apprentice on the grid with the good emoji
             if player=="player1":
                 map_grid[pos_X][pos_Y]="🚹"
             else:
                 map_grid[pos_X][pos_Y]="🚺"          
         for dragon in game_data[player]["dragon"]:
+            #get dragon pos and place them on the grid
             pos_X=game_data[player]["dragon"][dragon]["pos"][1]
             pos_Y=game_data[player]["dragon"][dragon]["pos"][0]
             map_grid[pos_X][pos_Y]="🐉"  
     for egg in game_data["eggs"]:
+        #get egg pos and place them on the grid
         pos_X=game_data["eggs"][egg]["pos"][1]
         pos_Y=game_data["eggs"][egg]["pos"][0]
         map_grid[pos_X][pos_Y]="🥚"
@@ -307,41 +315,46 @@ def Get_orders(game_data:dict, player:str) -> list:
     implementation: Mitta Kylian (03/03/25)
     
     """
+    #init orders list
     orders_player=[]
 
+    #input orders from player
     orders=input(f"{player}, veuillez entrer votre ordre ->")
 
+    #make a list by splitting by space
     orders=orders.split(" ")
+    #check if all orders are valid (only verify good format here and if player have entity) and add them to orders_players if they are
     for order in orders:
         if "summon"==order:
+            #add summon to keepen orders
             orders_player.append(order)
                       
         elif ':' in order:
+            #split with format / [0] : entity name, [1] : order info like 10-10, xN
             check = order.split(":")
 
             if len(check) > 1: 
                 if check[1]:
                     check_temp = []
+                    #if move order format, split and strip info
                     if check[1][0] == "@" and '-' in check[1]: 
                         check[1] = check[1].strip("@")
                         check_temp = check[1].split("-")
 
-                    if len(check_temp) > 1 and check_temp[0].isdigit() and check_temp[1].isdigit():
-                        if check[0] in game_data[player]["apprentices"]:
-                            orders_player.append(order)
+                    #check if apprentice belongs to the player
+                    if check[0] in game_data[player]["apprentices"]:
+                        #move order
+                        if len(check_temp) > 1 and check_temp[0].isdigit() and check_temp[1].isdigit():
+                                orders_player.append(order)
 
+                    #check if dragon belongs to the player
                     if check[0] in game_data[player]["dragon"]:
-                        if check[1][0] == "@" and '-' in check[1]: 
-                            check[1] = check[1].strip("@")
-                            check_temp = check[1].split("-")
-
+                        #move order
                         if len(check_temp) > 1 and check_temp[0].isdigit() and check_temp[1].isdigit():
                             orders_player.append(order)
-
+                        #attack order
                         if check[1] in {"xN", "xNE", "xE", "xSE", "xS", "xSW", "xW", "xNW"}:
                             orders_player.append(order)
-
-        
     return  orders_player
 
 def get_AI_orders(game_data:dict, player:str)->list:
@@ -410,11 +423,15 @@ def action(game_data:dict , all_orders:list)->dict :
     implementation: Hamza Sossey-Alaoui (v.1 17/03/25)
     implementation: Mitta Kylian, De Braekeleer Mickaël( v.2 22/03/25)
     """
+    #init variable for all player
+    all_move_orders=[]
     for player in ["player1", "player2"]:
+        #init variable player specific
         entity_occupied=[]
         move_orders=[]
         attack_orders=[]
         
+        #get player orders list
         if player=="player1":
             orders=all_orders[0]
         else:
@@ -444,9 +461,18 @@ def action(game_data:dict , all_orders:list)->dict :
                 #execute attack
                 for attacks in attack_orders:
                     game_data=attack(game_data, player, attacks)
-                #execute move
-                for movement in move_orders:
-                    game_data=move(game_data, player, movement)
+        all_move_orders.append(move_orders)
+        
+    # the players move at the same time after attack            
+    for player in ["player1", "player2"]:
+        
+        if player=="player1":
+            move_orders=all_move_orders[0]
+        else:
+            move_orders=all_move_orders[1]
+        #execute move
+        for movement in move_orders:
+            game_data=move(game_data, player, movement)
                     
     #check if some entity are dead
     game_data=check_death(game_data)
@@ -552,9 +578,11 @@ def attack(game_data:dict, player:str, order:str)->dict:
         implementation: Hamza SOSSEY-ALAOUI (v.1 17/03/25)
         implementation: Mitta Kylian, De Braekeleer Mickaël( v.2 22/03/25)
     """
+    #split order into the format / [0] : dragon name, [1] : attack direction
     order=order.split(":")
+    #check if dragon belongs to the player
     if order[0] in game_data[player]["dragon"]:
-        
+        #get all dragon usefull info and init valid_tiles 
         damage=game_data[player]["dragon"][order[0]]['attack_damage']
         attack_range=game_data[player]["dragon"][order[0]]['attack_range']
         position=game_data[player]["dragon"][order[0]]['pos']
@@ -563,7 +591,7 @@ def attack(game_data:dict, player:str, order:str)->dict:
         valid_tiles=[]
 
         for check_attack in range(1,attack_range+1):
-        
+            #get tiles coordinate for each direction
             if order[1] == "xN":
                 valid_tiles.append([pos_dragon_y-check_attack,pos_dragon_x])
             elif order[1] == "xNE":
@@ -580,9 +608,9 @@ def attack(game_data:dict, player:str, order:str)->dict:
                 valid_tiles.append([pos_dragon_y,pos_dragon_x-check_attack])
             elif order[1] == "xNW":
                 valid_tiles.append([pos_dragon_y-check_attack,pos_dragon_x-check_attack])
-                
+        
+        #check position of each entity that belongs to player1 or player2       
         for player in ["player1", "player2"]:
-            
             for apprentice in game_data[player]["apprentices"]:
                 if game_data[player]["apprentices"][apprentice]["pos"] in valid_tiles:
                     game_data[player]["apprentices"][apprentice]['current_health'] -= damage
@@ -610,23 +638,30 @@ def check_death(game_data:dict)->dict:
     specification: De Braekeleer Mickaël (v.1 23/02/25)
     implementation: De Braekeleer Mickaël( v.1 23/03/25)
     """
+    #check for every entity that belongs to player1 or player2
     for player in ["player1", "player2"]:
-    
         for apprentice in list(game_data[player]["apprentices"]):
+            #check if apprentice is dead
             if game_data[player]["apprentices"][apprentice]['current_health'] <1:
+                #if apprentice have linked dragon, delete them all aswell
                 for linked_dragon in game_data[player]["apprentices"][apprentice]["linked_dragon"]:
                     del game_data[player]["dragon"][linked_dragon]
+                #delete apprentice
                 del game_data[player]["apprentices"][apprentice]
 
         for dragon in list(game_data[player]["dragon"]):
+            #check if dragon is dead
             if  game_data[player]["dragon"][dragon]['current_health']<1:
+                #get dragon master (linked_apprentice) and damage him
                 master=game_data[player]["dragon"][dragon]["linked_apprentice"]
                 game_data[player]["apprentices"][master]["current_health"]-=10
                 game_data[player]["apprentices"][master]["linked_dragon"].remove(dragon)
+                #check if apprentice died to the damage
                 if game_data[player]["apprentices"][master]["current_health"]<1:
+                    #delete master
                     del game_data[player]["apprentices"][master]["current_health"]
-                del game_data[player]["dragon"][dragon]
-                
+                #delete dragon
+                del game_data[player]["dragon"][dragon]         
     return game_data
 
     
@@ -708,7 +743,9 @@ def regeneration(game_data:dict)->dict:
             #regenerate each entity
             for entity in game_data[player][entities]:
                 game_data[player][entities][entity]["current_health"]+=game_data[player][entities][entity]["regeneration"]
+                #check if current health go above max health
                 if game_data[player][entities][entity]["current_health"]>game_data[player][entities][entity]["max_health"]:
+                    #then current health is just equals to max health
                     game_data[player][entities][entity]["current_health"]=game_data[player][entities][entity]["max_health"]
         
     return game_data
@@ -727,11 +764,12 @@ def end_game(winner):
     implementation: Mitta kylian (21/03/25)
     """
 
-    
+    #print blank space
     print("")
     print("")
     print("")
     
+    #check winner
     if winner == "player1":
         print("🎉 |Le Gagnant est Player 1!| 🎉")
     elif winner == "player2":
@@ -741,6 +779,7 @@ def end_game(winner):
     else:
         print("⏳ |La partie est finie à cause de 100 tours sans actions.| ⏳")
     
+    #print blank space
     print("")
     print("")
     print("")
@@ -760,7 +799,9 @@ def check_win(game_data:dict, game:bool)->bool:
     specification: De Braekeleer Mickael (23/03/25)
     implementation: De Braekeleer Mickael (23/03/25)
     """
+    #game end by default
     game=False
+    #check who won
     if not game_data["player1"]["apprentices"] and not game_data["player2"]["apprentices"]:
         end_game("draw")
     elif not game_data["player1"]["apprentices"]:
@@ -770,6 +811,7 @@ def check_win(game_data:dict, game:bool)->bool:
     elif game_data["idle_turn"]==100:
         end_game("no_winner")
     else:
+        #if no winner, game continue
         game=True
         
     return game
