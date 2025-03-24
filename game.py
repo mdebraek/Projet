@@ -777,13 +777,13 @@ def end_game(winner):
     
     #check winner
     if winner == "player1":
-        print("🎉 |Le Gagnant est Player 1!| 🎉")
+        print("Le Gagnant est Player 1!")
     elif winner == "player2":
-        print("🎉 |Le Gagnant est Player 2!| 🎉")
+        print("Le Gagnant est Player 2!")
     elif winner == "draw":
-        print("⚖️ |La partie s'est terminée sur une égalité !| ⚖️")
+        print("La partie s'est terminée sur une égalité !")
     else:
-        print("⏳ |La partie est finie à cause de 100 tours sans attaque:( | ⏳")
+        print("La partie est finie à cause de 100 tours sans attaque")
     
     #print blank space
     print("")
