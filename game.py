@@ -120,6 +120,11 @@ def info_bracket(player:str,game_data: dict)->list:
             have_apprentice=True
         player_info.append(f'   -{apprentice} :')
         player_info.append(f'   >PV  : {game_data[player]["apprentices"][apprentice]["current_health"]}/{game_data[player]["apprentices"][apprentice]["max_health"]}')
+        #add linked_dragon
+        if game_data[player]["apprentices"][apprentice]["linked_dragon"]:
+            player_info.append(f'   -dragon lié :')
+        for dragon in game_data[player]["apprentices"][apprentice]["linked_dragon"]:
+            player_info.append(f'      >{dragon}')
         #temporary variable for position of the character 
         position=game_data[player]["apprentices"][apprentice]["pos"]
         player_info.append(f'   >pos : {position[0]} {position[1]} ')
@@ -380,7 +385,7 @@ def get_AI_orders(game_data:dict, player:str)->list:
     orders=[]
     
     #random summon
-    if random.randint(1, 10)==1:
+    if random.randint(1, 20)==1:
         orders.append("summon")
     #for all entity of a player, randomize orders
     for apprentice in game_data[player]["apprentices"]:
@@ -695,29 +700,30 @@ def move(game_data:dict, player:str, order:str)->dict:
     element = order[0]
     position = order[1]  
     position_list = position.split("-")  # Split the position into two parts: row and column
-    row = int(position_list[0])  
-    col = int(position_list[1])
-    pos=[0, 0]
-    path=False
+    if position_list[0].isdigit() and position_list[1].isdigit():
+        row = int(position_list[0])  
+        col = int(position_list[1])
+        pos=[0, 0]
+        path=False
 
-    #Check if entity is a dragon or an apprentice and add their pos path
-    if element in game_data[player]["apprentices"]:
-        path=[player, "apprentices", element, "pos"]
-    elif element in game_data[player]["dragon"]:
-        path=[player, "dragon", element, "pos"]    
-                
-    #check if entity exist (path exist)
-    if path!=False:          
-        #Check if the position is within the game board limits
-        if row >= 0 and row < max_rows and col >= 0 and col < max_cols:            
-            pos=game_data[path[0]][path[1]][path[2]][path[3]]
-            current_row=pos[0]
-            current_col=pos[1] 
-            #Check if the movement is only one cell (only on step in every direction)
-            if ((current_row+1==row or current_row==row or current_row-1==row) and 
-                (current_col+1==col or current_col==col or current_col-1==col)):
-                #Update the position of the element in game_data
-                game_data[path[0]][path[1]][path[2]][path[3]]  = [row, col]      
+        #Check if entity is a dragon or an apprentice and add their pos path
+        if element in game_data[player]["apprentices"]:
+            path=[player, "apprentices", element, "pos"]
+        elif element in game_data[player]["dragon"]:
+            path=[player, "dragon", element, "pos"]    
+                    
+        #check if entity exist (path exist)
+        if path!=False:          
+            #Check if the position is within the game board limits
+            if row >= 0 and row < max_rows and col >= 0 and col < max_cols:            
+                pos=game_data[path[0]][path[1]][path[2]][path[3]]
+                current_row=pos[0]
+                current_col=pos[1] 
+                #Check if the movement is only one cell (only on step in every direction)
+                if ((current_row+1==row or current_row==row or current_row-1==row) and 
+                    (current_col+1==col or current_col==col or current_col-1==col)):
+                    #Update the position of the element in game_data
+                    game_data[path[0]][path[1]][path[2]][path[3]]  = [row, col]      
     return game_data  
 
 def regeneration(game_data:dict)->dict:
@@ -773,11 +779,11 @@ def end_game(winner):
     if winner == "player1":
         print("🎉 |Le Gagnant est Player 1!| 🎉")
     elif winner == "player2":
-        print("🏆 |Le Gagnant est Player 2!| 🏆")
+        print("🎉 |Le Gagnant est Player 2!| 🎉")
     elif winner == "draw":
         print("⚖️ |La partie s'est terminée sur une égalité !| ⚖️")
     else:
-        print("⏳ |La partie est finie à cause de 100 tours sans actions.| ⏳")
+        print("⏳ |La partie est finie à cause de 100 tours sans attaque:( | ⏳")
     
     #print blank space
     print("")
@@ -890,7 +896,7 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
                 game_data[player]["summon"]-=1
                 
         display(game_data)
-        time.sleep(0.5)
+        time.sleep(0.2)
         
         game=check_win(game_data, game)     
 
