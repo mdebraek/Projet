@@ -86,8 +86,7 @@ def get_AI_orders(game_data:dict, player:str)->list:
     Version
     -------
     specification: De Braekeleer Mickaël (v.1 27/03/25)
-    implementation:  
-
+    implementation: : Kylian Mitta, Mickaël De Braekeleer, Aymane El Abbassi, Hamza Sossey-Alaoui (v.1 27/03/25)
     """
     #init orders variable
     orders=[]
@@ -106,7 +105,6 @@ def get_AI_orders(game_data:dict, player:str)->list:
         
         if priority=="egg":
             egg_focus=False
-            dif=[]
             #check for nearby eggs to hatch them
             for egg in eggs:
                 dif_y=abs(int(eggs[egg]["pos"][0])-int(app_pos[0]))
