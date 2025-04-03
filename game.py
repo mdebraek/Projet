@@ -255,7 +255,9 @@ def display(game_data: dict):
 
     #maximum vertical size of display
     max_size=max(Size_X*2+1, max(4+len(game_data["player1"]["apprentices"])+len(game_data["player1"]["dragon"]),
-                                   4+len(game_data["player2"]["apprentices"])+len(game_data["player2"]["dragon"]),))
+                                   4+len(game_data["player2"]["apprentices"])+len(game_data["player2"]["dragon"]),
+                                   len(player_1), 
+                                   len(player_2)))
     
     #maximum horiziontal size of left display brackets
     max_info_p1=max([len(elem) for elem in player_1])
@@ -271,28 +273,31 @@ def display(game_data: dict):
             print(" "*max_info_p1,end="")
             
         #generate Array
-        #if line=no info case
-        if line%2==0:
-            for cases in range (game_data["map"][0]*3):
-                if cases%3==0:
-                    print("+",end="")
-                else:
-                    print("-",end="")
-            print("+",end="")
-        #if line=info case  
+        if line<game_data["map"][0]*2+1:
+            #if line=no info case
+            if line%2==0:
+                for cases in range (game_data["map"][0]*3):
+                    if cases%3==0:
+                        print("+",end="")
+                    else:
+                        print("-",end="")
+                print("+",end="")
+            #if line=info case  
+            else:
+                for cases in range (game_data["map"][0]*3):
+                    if cases%3==0:
+                        print("|",end="")
+                    else:
+                        if custom_len(map_grid[int(y)][int(x)])==2 and int(y)==float(y):
+                            print(f"{map_grid[int(y)][int(x)]}",end="")
+                        elif int(y)==float(y):
+                            print(f"{map_grid[int(y)][int(x)]}"*2,end="")
+                        y+=0.5
+                y=float(1)
+                x+=1
+                print("|",end="")
         else:
-            for cases in range (game_data["map"][0]*3):
-                if cases%3==0:
-                    print("|",end="")
-                else:
-                    if custom_len(map_grid[int(y)][int(x)])==2 and int(y)==float(y):
-                        print(f"{map_grid[int(y)][int(x)]}",end="")
-                    elif int(y)==float(y):
-                        print(f"{map_grid[int(y)][int(x)]}"*2,end="")
-                    y+=0.5
-            y=float(1)
-            x+=1
-            print("|",end="")
+            print(" "*(game_data["map"][1]*3+1), end="")
         
         #print player 2 info brackets
         if len(player_2)>line:   
@@ -363,7 +368,7 @@ def Get_orders(game_data:dict, player:str) -> list:
     return  orders_player
 
 def get_AI_orders(game_data:dict, player:str)->list:
-    """get random AI orders (basic)
+    """get advanced AI orders
 
     parameters
     ----------
@@ -377,38 +382,54 @@ def get_AI_orders(game_data:dict, player:str)->list:
     
     Version
     -------
-    specification: De Braekeleer Mickaël (v.1 13/03/25)
-    implementation:  De Braekeleer Mickaël (v.1 19/03/25)
+    specification: De Braekeleer Mickaël (v.1 27/03/25)
+    implementation:  
 
     """
     #init orders variable
     orders=[]
+    eggs={}
     
-    #random summon
-    if random.randint(1, 20)==1:
-        orders.append("summon")
-    #for all entity of a player, randomize orders
-    for apprentice in game_data[player]["apprentices"]:
-        #random move
-        random_direction=[[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]
-        random_direction=random_direction[random.randint(0, 7)]
-        position=game_data[player]["apprentices"][apprentice]["pos"]
-        orders.append(f"{apprentice}:@{position[0]+random_direction[0]}-{position[1]+random_direction[1]}")   
-    for dragon in game_data[player]["dragon"]:
-        #random move or attack
-        if random.randint(1, 2)==1:
-            #random move
-            random_direction=[[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]
-            random_direction=random_direction[random.randint(0, 7)]
-            position=game_data[player]["dragon"][dragon]["pos"]
-            orders.append(f"{dragon}:@{position[0]+random_direction[0]}-{position[1]+random_direction[1]}")  
-        else: 
-            #random attack
-            random_direction=["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-            random_direction=random_direction[random.randint(0, 7)]
-            orders.append(f"{dragon}:x{random_direction}")
+    #get all egg pos
+    for egg in game_data["eggs"]:
+            egg_pos=game_data["eggs"][egg]["pos"]
+            eggs[egg]={}
+            eggs[egg]={"pos": egg_pos, "dif": 0, "focus": False}
             
-    return orders 
+    #get order for every apprentices
+    for apprentice in game_data[player]["apprentices"]:
+        priority="egg"
+        app_pos=game_data[player]["apprentices"][apprentice]["pos"]
+        
+        if priority=="egg":
+            egg_focus=False
+            #check for nearby eggs to hatch them
+            for egg in eggs:
+                dif_y=abs(int(eggs[egg]["pos"][0])-int(app_pos[0]))
+                dif_x=abs(int(eggs[egg]["pos"][1])-int(app_pos[1]))
+                eggs[egg]["dif"]=max(dif_y, dif_x)
+            #check for nearest egg to hatch it
+            nearest_egg=10000
+            for egg in eggs:
+                if eggs[egg]["focus"]==False and eggs[egg]["dif"]<=nearest_egg:
+                    nearest_egg=eggs[egg]["dif"]
+                    egg_focus=egg
+            if egg_focus:        
+                eggs[egg_focus]["focus"]=True
+                
+                order=[0, 0]
+                if app_pos[0]>eggs[egg_focus]["pos"][0]:
+                    order[0]=-1
+                elif app_pos[0]<eggs[egg_focus]["pos"][0]:
+                    order[0]=1
+                if app_pos[1]>eggs[egg_focus]["pos"][1]:
+                    order[1]=-1
+                elif app_pos[1]<eggs[egg_focus]["pos"][1]:
+                    order[1]=1
+                    
+                orders.append(f'{apprentice}:@{int(app_pos[0])+order[0]}-{int(app_pos[1])+order[1]}')
+                           
+    return orders
     
 def action(game_data:dict , all_orders:list)->dict :
     """General function which calls the subfunctions to perform the different actions of the game
@@ -685,8 +706,8 @@ def move(game_data:dict, player:str, order:str)->dict:
     
     Version
     -------
-    specification: 
-    implementation:
+    specification: Aymane el abbassi(20/02/2025)
+    implementation: Aymane el abbassi(v.1 20/02/2025)
     implementation: Mitta Kylian, De Braekeleer Mickaël( v.2 22/03/25) 
     """
     
@@ -896,7 +917,7 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
                 game_data[player]["summon"]-=1
                 
         display(game_data)
-        time.sleep(0.2)
+        time.sleep(1)
         
         game=check_win(game_data, game)     
 
@@ -906,4 +927,4 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
         
 #program
 map_path="C:/Users/coram/OneDrive/Desktop/projet/map.drk"       
-play_game(map_path, 6, "human", 6, "AI")
+play_game(map_path, 6, "AI", 6, "AI")
