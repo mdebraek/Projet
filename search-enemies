@@ -1,0 +1,43 @@
+def search_enemies(game_data: dict, player: str, entity: str) -> list:
+    """
+    Recherche les ennemis autour d'une entité donnée et renvoie une liste des ennemis à proximité.
+
+    Paramètres :
+    - game_data : dict, les données actuelles du jeu, qui contiennent des informations sur les entités, leurs positions, etc.
+    - player : str, le nom du joueur pour lequel on fait la recherche ("player1" ou "player2").
+    - entity : str, le nom de l'entité à vérifier (un dragon ou un apprenti). C'est l'entité dont on cherche les ennemis autour.
+
+    Retourne :
+    - list : une liste contenant les ennemis autour de l'entité donnée (ceux qui sont à une case de distance).
+    """
+    # Liste pour stocker les ennemis trouvés autour de l'entité
+    enemies = []
+    
+    # Essayer de récupérer les données de l'entité (dragon ou apprenti)
+    # Si l'entité est un apprenti, on accède à sa donnée dans "apprentices" ou dans "dragon" si c'est un dragon
+    entity_info = game_data[player]["apprentices"].get(entity) or game_data[player]["dragon"].get(entity)
+    
+    # Si l'entité existe, on continue
+    if entity_info:
+        # On récupère la position de l'entité (les coordonnées sur la carte)
+        entity_pos = entity_info["pos"]
+        
+        # Déterminer quel est le joueur adverse
+        # Si c'est "player1", l'ennemi sera "player2", sinon l'ennemi sera "player1"
+        enemy_player = "player2" if player == "player1" else "player1"
+        
+        # Parcourir les types d'entités ennemies : "apprentices" et "dragon"
+        for enemy_type in ["apprentices", "dragon"]:
+            # Pour chaque ennemi du type donné (apprenti ou dragon)
+            for enemy, enemy_data in game_data[enemy_player][enemy_type].items():
+                # Récupérer la position de l'ennemi
+                enemy_pos = enemy_data["pos"]
+                
+                # Vérifier si l'ennemi est à proximité (dans un rayon de 1 case autour de l'entité)
+                # La condition suivante vérifie si la différence de lignes et de colonnes entre l'entité et l'ennemi est au plus égale à 1
+                if abs(entity_pos[0] - enemy_pos[0]) <= 1 and abs(entity_pos[1] - enemy_pos[1]) <= 1:
+                    # Si l'ennemi est à proximité, on l'ajoute à la liste des ennemis
+                    enemies.append(enemy)
+
+    # Retourner la liste des ennemis trouvés
+    return enemies
