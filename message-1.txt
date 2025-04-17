@@ -1,4 +1,5 @@
-def search_enemies(game_data: dict, player: str) -> list:
+import random
+def search_enemies(game_data: dict, player: str,dragon,enemy) -> list:
     """
     Recherche les ennemis autour d'une entité donnée et renvoie une liste des ennemis à proximité.
 
@@ -11,39 +12,28 @@ def search_enemies(game_data: dict, player: str) -> list:
     - list : une liste contenant les ennemis autour de l'entité donnée (ceux qui sont à une case de distance).
     """
 
-    if player=="player_1":
-        player_enemy="player_2"
-    else: 
-        player_enemy="player_1"
-
-
-    for dragon in game_data[player]["dragon"]:
-        for dragon_enemies in  game_data[player_enemy]["dragon"]:
-             
-                dragon_pos=game_data[player]["dragon"][dragon]["pos"]
-                dragon_enemies_pos=game_data[player_enemy]["dragon"][dragon_enemies]["pos"]
-
-                if dragon not in focus_dragon:
-
-                    if abs(dragon_pos[0] - dragon_enemies_pos[0]) <= game_data[player]["dragon"][dragon]["attack_range"]+1 and abs(dragon_enemies_pos[1] - enemy_pos[1]) <= game_data[player]["dragon"][dragon]["attack_range"]+1:
-            
-                    else: 
-                        dragon_focus(dragon)
-
-                else:
-                    dragon_focus(dragon)
-
-def dragon_focus(game_data: dict, player: str,dragon):
-        if player=="player_1":
-            player_enemy="player_2"
-        else: 
-            player_enemy="player_1"
-        for dragon_enemies in  game_data[player_enemy]["dragon"]:
-             
-                dragon_pos=game_data[player]["dragon"][dragon]["pos"]
-                dragon_enemies_pos=game_data[player_enemy]["dragon"][dragon_enemies]["pos"]
     
-                distance_x = abs(dragon_pos[0] - dragon_enemies_pos[0])
-                distance_y = abs(dragon_pos[0] - dragon_enemies_pos[0])
+    for dragon_enemies in  game_data[enemy]["dragon"]:
+             
+                dragon_pos=game_data[player]["dragon"][dragon]["pos"]
+                dragon_enemies_pos=game_data[enemy]["dragon"][dragon_enemies]["pos"]
 
-                distance=[distance_y,distance_x]
+                
+
+                if abs(dragon_pos[0] - dragon_enemies_pos[0]) > game_data[player]["dragon"][dragon]["attack_range"]+1 and abs(dragon_enemies_pos[1] - dragon_enemies_pos[1]) > game_data[player]["dragon"][dragon]["attack_range"]+1:
+                        
+
+                for dragon_enemies in  game_data[enemy]["dragon"]:
+             
+                    distance_x = abs(dragon_pos[0] - dragon_enemies_pos[0])
+                    distance_y = abs(dragon_pos[0] - dragon_enemies_pos[0])
+                    
+
+                    
+          
+                           
+                           move=random.choice([0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0])
+                           new_position=[distance_y+move[0],distance_x+move[1]]
+
+                           if 
+                           
