@@ -1,0 +1,47 @@
+def value(game_data: dict, player: str, entity: str) -> float:
+    """
+    Donne une valeur à une entité (dragon ou apprenti) pour aider à prendre une bonne décision par l'IA.
+    
+    Cette valeur est basée sur :
+    - sa santé (plus elle est attaquée, moins elle a de valeur)
+    - sa position par rapport aux ennemis (plus elle est proche, plus elle peut être en danger)
+    
+    Retourne un score entre 0 et 1.
+    """
+
+    # Récupérer les données de l'entité (dragon ou apprenti)
+    entity_data = game_data[player]["apprentices"] or game_data[player]["dragons"]
+
+    # Si l'entité n'existe pas, on retourne 0 directement
+    if not entity_data:
+        return 0
+
+    # ---------- CRITÈRE 1 : CALCUL DE LA SANTÉ ----------
+    current_health = entity_data["current_health"]
+    max_health = entity_data["max_health"]
+    health_level = current_health / max_health  # Valeur entre 0 et 1
+
+    # ---------- CRITÈRE 2 : CALCUL DE LA DISTANCE AVEC LES ENNEMIS ----------
+    # Initialisation de la distance minimale avec une valeur très grande
+    min_distance = 99999
+
+    # Déterminer le joueur ennemi
+    enemy_player = "player2" if player == "player1" else "player1"
+    entity_pos = entity_data["pos"]
+
+    # Vérifier les positions des ennemis (dragons et apprentis)
+    for entity_type in ["apprentices", "dragons"]:
+        for enemy in game_data[enemy_player][entity_type]:
+
+            enemy_pos = enemy["pos"]
+            # Calcul de la distance entre l'entité et l'ennemi
+            distance = abs(entity_pos[0] - enemy_pos[0]) + abs(entity_pos[1] - enemy_pos[1])
+            min_distance = min(min_distance, distance)
+    print(min_distance)
+    # ---------- CRITÈRE 3 : CALCUL RISQUE Du danger ----------
+    danger_level = 1 / (1 + min_distance)  # Plus la distance est petite, plus le danger_level est élevé
+
+    # ---------- CALCUL FINAL ----------
+    final_score = (health_level + danger_level) / 2  # Moyenne des deux critères
+
+    return final_score
