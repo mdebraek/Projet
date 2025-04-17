@@ -3,8 +3,243 @@ term = blessed.Terminal()
 
 from remote_play import create_connection, get_remote_orders, notify_remote_orders, close_connection
 
+import copy
+#test
+def focus_egg(game_data, player, apprentice:str, already_focus, eggs=False):
+    #init orders variable
+    orders=[]
+    
+    if not eggs:
+        eggs={}
+        #get all egg pos
+        for egg in game_data["eggs"]:
+                egg_pos=game_data["eggs"][egg]["pos"]
+                eggs[egg]={}
+                eggs[egg]={"pos": egg_pos, "dif": 0, "focus": False}
+            
+    #get order for every apprentices
+    app_pos=game_data[player]["apprentices"][apprentice]["pos"]
+    
+    egg_focus=False
+    #check for nearby eggs to hatch them
+    for egg in eggs:
+        dif_y=abs(int(eggs[egg]["pos"][0])-int(app_pos[0]))
+        dif_x=abs(int(eggs[egg]["pos"][1])-int(app_pos[1]))
+        eggs[egg]["dif"]=max(dif_y, dif_x)
+    #check for nearest egg to hatch it
+    nearest_egg=10000
+    for egg in eggs:
+        if eggs[egg]["focus"]==False and eggs[egg]["dif"]<=nearest_egg:
+            nearest_egg=eggs[egg]["dif"]
+            egg_focus=egg
+    if egg_focus:        
+        eggs[egg_focus]["focus"]=True
+        
+        order=[0, 0]
+        if app_pos[0]>eggs[egg_focus]["pos"][0]:
+            order[0]=-1
+        elif app_pos[0]<eggs[egg_focus]["pos"][0]:
+            order[0]=1
+        if app_pos[1]>eggs[egg_focus]["pos"][1]:
+            order[1]=-1
+        elif app_pos[1]<eggs[egg_focus]["pos"][1]:
+            order[1]=1
+            
+        orders=(f'{apprentice}:@{int(app_pos[0])+order[0]}-{int(app_pos[1])+order[1]}')
+    else:
+        orders=""
 
+            
+    return orders, eggs
+            
+def get_AI_orders(game_data:dict, player:str)->list:
+    """get advanced AI orders
 
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    
+    Version
+    -------
+    specification: De Braekeleer Mickaël (v.1 27/03/25)
+    implementation: : Kylian Mitta, Mickaël De Braekeleer, Aymane El Abbassi, Hamza Sossey-Alaoui (v.1 27/03/25)
+ 
+ 
+    """
+    orders=minimax(game_data, player, 2, True)[1]
+    
+    return orders
+        
+
+def minimax(game_data:dict, player:str, depth:int, is_maxing:bool)->list:
+    """small algorythm that scan every possible move in depth n and choose best move to do each turn to maximize points
+
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+    depth : depth to scan every move possible (int)
+    is_maxing : what the func have to do, max score or minimize score(bool)
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    
+    Version
+    -------
+    specification: De Braekeleer Mickaël (v.1 09/04/25)
+    implementation: : De Braekeleer Mickaël (v.1 09/04/25)
+    """
+    if player == "player1":
+        enemy="player2"
+    else:
+        enemy="player1"
+    all_player_move=all_possible_move(game_data, player, enemy)
+    
+    if depth == 0 or not check_win(game_data, True):
+        value_player=value(game_data, player)
+        value_enemy=value(game_data, enemy)
+        return (value_player-value_enemy), None
+
+    best_move = []
+    
+    alt_game_data=copy.deepcopy(game_data)  
+    if is_maxing:
+        for all_entity_move in all_player_move:
+            max_eval = -9999999
+            for entity_move in all_entity_move: 
+                alt_game_data=simulate_turn(alt_game_data, player, entity_move)                  
+                eval = minimax(alt_game_data, enemy, (depth-1), False)[0]
+                if eval > max_eval:
+                    max_eval = eval
+                    best_entity_move = entity_move
+                else:
+                    alt_game_data=copy.deepcopy(game_data) 
+            best_move.append(best_entity_move)
+        return max_eval, best_move
+    
+    else:           
+        for all_entity_move in all_player_move:
+            min_eval = 99999999
+            for entity_move in all_entity_move:   
+                alt_game_data=simulate_turn(alt_game_data, player, entity_move)
+                eval = minimax(alt_game_data, enemy, (depth-1), True)[0]
+                if eval < min_eval:
+                    min_eval = eval
+                    best_entity_move = entity_move
+                else:
+                    alt_game_data=copy.deepcopy(game_data) 
+            best_move.append(best_entity_move)
+        return min_eval, None
+
+    
+def value(game_data:dict, player:str)->float:
+    value=float(0)
+    
+    for apprentice in game_data[player]["apprentices"]:
+        linked_value=0
+        if game_data[player]["apprentices"][apprentice]["linked_dragon"]:
+            for linked_dragon in game_data[player]["apprentices"][apprentice]["linked_dragon"]:
+                linked_value=game_data[player]["dragon"][linked_dragon]["current_health"]
+        value+=int(game_data[player]["apprentices"][apprentice]["current_health"]+linked_value)
+    for dragon in game_data[player]["dragon"]:
+        value+=int(game_data[player]["dragon"][dragon]["current_health"])
+        
+    for egg in game_data["eggs"]:
+        value+=float(int(game_data["eggs"][egg]["max_health"])/int((game_data["eggs"][egg]["time_to_hatch"])*2+1))
+    
+    return value
+    
+    
+
+def simulate_turn(alt_game_data, player, order):
+    if player=="player1":
+        all_orders=[[order], []]
+    else:
+        all_orders=[[], [order]]
+    
+    alt_game_data=action(alt_game_data,  all_orders)  
+        
+    alt_game_data=regeneration(alt_game_data)
+    alt_game_data=hatch_egg(alt_game_data)
+    alt_game_data["idle_turn"]+=1
+    
+    for player in ["player1", "player2"]:
+        if alt_game_data[player]["summon"]>0:
+            alt_game_data[player]["summon"]-=1
+    
+    return alt_game_data
+    
+def all_possible_move(game_data:dict, player:str, enemy:str)->list:
+    """small algorythm that scan every possible move in depth n and choose best move to do each turn to maximize points
+
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+    enemy : name of the ennemy (str)
+
+    
+
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    
+    Version
+    -------
+    specification: Mitta Kylian, De Braekeleer Mickaël (v.1 10/04/25)
+    implementation: : Mitta Kylian, De Braekeleer Mickaël (v.1 10/04/25)
+    """
+    orders=[]
+    size=game_data["map"]
+    size_y=int(size[0])
+    size_x=int(size[1])
+    for apprentice in game_data[player]["apprentices"]:
+        order=[]
+        position=game_data[player]["apprentices"][apprentice]["pos"]
+        enemy_nearby=False
+        for dragon in game_data[enemy]["dragon"]:
+            dragon_pos=game_data[enemy]["dragon"][dragon]["pos"]
+            dragon_range=game_data[enemy]["dragon"][dragon]["attack_range"]+1
+            if abs(position[0]-dragon_pos[0])<dragon_range and abs(position[1]-dragon_pos[1])<dragon_range: 
+                enemy_nearby=True
+        if enemy_nearby:
+            for move in [[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]:
+                pos_y=int(position[0]+move[0])
+                pos_x=int(position[1]+move[1])
+                if pos_y>0 and pos_y<size_y and pos_x>1 and pos_x<size_x:
+                    order.append(f"{apprentice}:@{pos_y}-{pos_x}")
+        else:
+            try:
+                test=eggs
+            except:
+                eggs={}
+            path_to_egg, eggs = focus_egg(game_data, player, apprentice, eggs)
+            order.append(path_to_egg)
+        orders.append(order)
+            
+    for dragon in game_data[player]["dragon"]:
+        order=[]
+        position=game_data[player]["dragon"][dragon]["pos"]
+        for move in [[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]:
+            pos_y=int(position[0]+move[0])
+            pos_x=int(position[1]+move[1])
+            if pos_y>0 and pos_y<size_y and pos_x>1 and pos_x<size_x:
+                order.append(f"{dragon}:@{pos_y}-{pos_x}")
+        for attack in ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]:
+            order.append(f"{dragon}:x{attack}")  
+        orders.append(order)
+            
+    return orders
+    
+    
 # other functions
 def load_map(map_file_path:str)->dict:
     """Load the map files and return their data in the form of a dictionnary
@@ -367,69 +602,6 @@ def Get_orders(game_data:dict, player:str) -> list:
                             orders_player.append(order)
     return  orders_player
 
-def get_AI_orders(game_data:dict, player:str)->list:
-    """get advanced AI orders
-
-    parameters
-    ----------
-    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
-    player : number of the player (int)
-
-    
-    returns
-    -------
-    orders : order with the correct format (list)
-    
-    Version
-    -------
-    specification: De Braekeleer Mickaël (v.1 27/03/25)
-    implementation:  
-
-    """
-    #init orders variable
-    orders=[]
-    eggs={}
-    
-    #get all egg pos
-    for egg in game_data["eggs"]:
-            egg_pos=game_data["eggs"][egg]["pos"]
-            eggs[egg]={}
-            eggs[egg]={"pos": egg_pos, "dif": 0, "focus": False}
-            
-    #get order for every apprentices
-    for apprentice in game_data[player]["apprentices"]:
-        priority="egg"
-        app_pos=game_data[player]["apprentices"][apprentice]["pos"]
-        
-        if priority=="egg":
-            egg_focus=False
-            #check for nearby eggs to hatch them
-            for egg in eggs:
-                dif_y=abs(int(eggs[egg]["pos"][0])-int(app_pos[0]))
-                dif_x=abs(int(eggs[egg]["pos"][1])-int(app_pos[1]))
-                eggs[egg]["dif"]=max(dif_y, dif_x)
-            #check for nearest egg to hatch it
-            nearest_egg=10000
-            for egg in eggs:
-                if eggs[egg]["focus"]==False and eggs[egg]["dif"]<=nearest_egg:
-                    nearest_egg=eggs[egg]["dif"]
-                    egg_focus=egg
-            if egg_focus:        
-                eggs[egg_focus]["focus"]=True
-                
-                order=[0, 0]
-                if app_pos[0]>eggs[egg_focus]["pos"][0]:
-                    order[0]=-1
-                elif app_pos[0]<eggs[egg_focus]["pos"][0]:
-                    order[0]=1
-                if app_pos[1]>eggs[egg_focus]["pos"][1]:
-                    order[1]=-1
-                elif app_pos[1]<eggs[egg_focus]["pos"][1]:
-                    order[1]=1
-                    
-                orders.append(f'{apprentice}:@{int(app_pos[0])+order[0]}-{int(app_pos[1])+order[1]}')
-                           
-    return orders
     
 def action(game_data:dict , all_orders:list)->dict :
     """General function which calls the subfunctions to perform the different actions of the game
@@ -475,15 +647,16 @@ def action(game_data:dict , all_orders:list)->dict :
                     print(orders)
             else:
                 #sort orders
-                for order in orders:             
-                    order_split=order.split(":")
-                    #if entity not already doing something
-                    if not order_split[0] in entity_occupied:
-                        if "@" in order:
-                            move_orders.append(order)
-                        elif "x" in order_split[1]:
-                            attack_orders.append(order)
-                        entity_occupied.append(order.split(":")[0])
+                for order in orders:
+                    if not order=="":             
+                        order_split=order.split(":")
+                        #if entity not already doing something
+                        if not order_split[0] in entity_occupied:
+                            if "@" in order:
+                                move_orders.append(order)
+                            elif "x" in order_split[1]:
+                                attack_orders.append(order)
+                            entity_occupied.append(order.split(":")[0])
                 #execute attack
                 for attacks in attack_orders:
                     game_data=attack(game_data, player, attacks)
@@ -555,7 +728,6 @@ def hatch_egg(game_data:dict)->dict:
     implementation: Mitta Kylian (v2 19/03/25)
     """
     
-    
     # loop for each player
     for player in ['player1', 'player2']:
         
@@ -581,10 +753,10 @@ def hatch_egg(game_data:dict)->dict:
                              
         for egg in egg_to_delete:
             # delete the old egg and time to hatch stats
-            del game_data["eggs"][egg]
-            del game_data[player]["dragon"][egg]["time_to_hatch"]
-
-                       
+            if egg in game_data["eggs"]:
+                del game_data["eggs"][egg]
+                del game_data[player]["dragon"][egg]["time_to_hatch"]
+                     
     return game_data
 
 def attack(game_data:dict, player:str, order:str)->dict:
@@ -671,8 +843,8 @@ def check_death(game_data:dict)->dict:
             if game_data[player]["apprentices"][apprentice]['current_health'] <1:
                 #if apprentice have linked dragon, delete them all aswell
                 for linked_dragon in game_data[player]["apprentices"][apprentice]["linked_dragon"]:
-                    del game_data[player]["dragon"][linked_dragon]
-                #delete apprentice
+                    if linked_dragon in game_data[player]["dragon"]:
+                        del game_data[player]["dragon"][linked_dragon]
                 del game_data[player]["apprentices"][apprentice]
 
         for dragon in list(game_data[player]["dragon"]):
@@ -680,14 +852,13 @@ def check_death(game_data:dict)->dict:
             if  game_data[player]["dragon"][dragon]['current_health']<1:
                 #get dragon master (linked_apprentice) and damage him
                 master=game_data[player]["dragon"][dragon]["linked_apprentice"]
-                game_data[player]["apprentices"][master]["current_health"]-=10
-                game_data[player]["apprentices"][master]["linked_dragon"].remove(dragon)
-                #check if apprentice died to the damage
-                if game_data[player]["apprentices"][master]["current_health"]<1:
-                    #delete master
-                    del game_data[player]["apprentices"][master]["current_health"]
-                #delete dragon
-                del game_data[player]["dragon"][dragon]         
+                if master in game_data[player]["apprentices"]:
+                    game_data[player]["apprentices"][master]["current_health"] -= 10
+                    if dragon in game_data[player]["apprentices"][master]["linked_dragon"]:
+                        game_data[player]["apprentices"][master]["linked_dragon"].remove(dragon)
+                    if game_data[player]["apprentices"][master]["current_health"] < 1:
+                        del game_data[player]["apprentices"][master]
+                del game_data[player]["dragon"][dragon]        
     return game_data
 
     
@@ -811,13 +982,13 @@ def end_game(winner):
     print("")
     print("")
     
-def check_win(game_data:dict, game:bool)->bool:
+def check_win(game_data:dict, silent:bool)->bool:
     """check if one of the two player won
     
     parameters
     ----------
     game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
-    game: if the game is running or not (bool)
+    silent : if silent or not
     
     return
     ------
@@ -830,13 +1001,17 @@ def check_win(game_data:dict, game:bool)->bool:
     game=False
     #check who won
     if not game_data["player1"]["apprentices"] and not game_data["player2"]["apprentices"]:
-        end_game("draw")
+        if not silent:
+            end_game("draw")
     elif not game_data["player1"]["apprentices"]:
-        end_game("player2")
+        if not silent:
+            end_game("player2")
     elif not game_data["player2"]["apprentices"]:
-        end_game("player1")
+        if not silent:
+            end_game("player1")
     elif game_data["idle_turn"]==100:
-        end_game("no_winner")
+        if not silent:
+            end_game("no_winner")
     else:
         #if no winner, game continue
         game=True
@@ -919,7 +1094,7 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
         display(game_data)
         time.sleep(1)
         
-        game=check_win(game_data, game)     
+        game=check_win(game_data, False)     
 
     # close connection, if necessary
     if type_1 == 'remote' or type_2 == 'remote' and not game:
