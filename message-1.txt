@@ -22,21 +22,24 @@ def search_enemies(game_data: dict, player: str,dragon,enemy) -> list:
 
                 if abs(dragon_pos[0] - dragon_enemies_pos[0]) > game_data[player]["dragon"][dragon]["attack_range"]+1 and abs(dragon_enemies_pos[1] - dragon_enemies_pos[1]) > game_data[player]["dragon"][dragon]["attack_range"]+1:
                         
+                    distance_y = abs(dragon_pos[0] - dragon_enemies_pos[0])
+                    distance_x = abs(dragon_pos[1] - dragon_enemies_pos[1])
+                    
+                    while closer_position==False:      
+                        move=random.choice([0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0])
+                        new_position_y=distance_y+move[0]
+                        new_position_x=distance_x+move[1]
+                        new_distance_y=abs(new_position_y - dragon_enemies_pos[0])
+                        new_distance_x=abs(new_position_x - dragon_enemies_pos[1])
+                    
+                        if new_distance_y<distance_y and new_distance_x<distance_x:
+                            closer_position=True
 
-                    for dragon_enemies in  game_data[enemy]["dragon"]:
-                        distance_y = abs(dragon_pos[0] - dragon_enemies_pos[0])
-                        distance_x = abs(dragon_pos[1] - dragon_enemies_pos[1])
-                        
-                        while closer_position==False:      
-                            move=random.choice([0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0])
-                            new_position_y=distance_y+move[0]
-                            new_position_x=distance_x+move[1]
-                            new_distance_y=abs(new_position_y - dragon_enemies_pos[0])
-                            new_distance_x=abs(new_position_x - dragon_enemies_pos[1])
-                        
-                            if new_distance_y<distance_y and new_distance_x<distance_x:
-                                closer_position=True
-
-                        order=f"{dragon}:@{new_position_y}-{new_position_x}"
+                    order=(f"{dragon}:@{new_position_y}-{new_position_x}")
 
     return order
+
+
+                    
+                
+                    
