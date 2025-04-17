@@ -5,47 +5,113 @@ from remote_play import create_connection, get_remote_orders, notify_remote_orde
 
 import copy
 #test
-def focus_egg(game_data, player, apprentice:str, already_focus, eggs=False):
-    #init orders variable
-    orders=[]
+
+def search_enemies(game_data: dict, player: str,dragon,enemy) -> list:
+    """
+    Recherche les ennemis autour d'une entité donnée et renvoie une liste des ennemis à proximité.
+
+    Paramètres :
+    - game_data : dict, les données actuelles du jeu, qui contiennent des informations sur les entités, leurs positions, etc.
+    - player : str, le nom du joueur pour lequel on fait la recherche ("player1" ou "player2").
+    - entity : str, le nom de l'entité à vérifier (un dragon ou un apprenti). C'est l'entité dont on cherche les ennemis autour.
+
+    Retourne :
+    - list : une liste contenant les ennemis autour de l'entité donnée (ceux qui sont à une case de distance).
+    """
     
-    if not eggs:
-        eggs={}
-        #get all egg pos
-        for egg in game_data["eggs"]:
-                egg_pos=game_data["eggs"][egg]["pos"]
-                eggs[egg]={}
-                eggs[egg]={"pos": egg_pos, "dif": 0, "focus": False}
-            
-    #get order for every apprentices
-    app_pos=game_data[player]["apprentices"][apprentice]["pos"]
+    dragon_pos=game_data[player]["dragon"][dragon]["pos"]
+    all_entity_enemy_pos=[]
+    nearest_entity=[None, 10000] #pos, dif
+  
     
-    egg_focus=False
-    #check for nearby eggs to hatch them
-    for egg in eggs:
-        dif_y=abs(int(eggs[egg]["pos"][0])-int(app_pos[0]))
-        dif_x=abs(int(eggs[egg]["pos"][1])-int(app_pos[1]))
-        eggs[egg]["dif"]=max(dif_y, dif_x)
-    #check for nearest egg to hatch it
-    nearest_egg=10000
-    for egg in eggs:
-        if eggs[egg]["focus"]==False and eggs[egg]["dif"]<=nearest_egg:
-            nearest_egg=eggs[egg]["dif"]
-            egg_focus=egg
-    if egg_focus:        
-        eggs[egg_focus]["focus"]=True
+    
+    
+    #recupere la position de toutes les entités enemies
+    for dragon_enemy in  game_data[enemy]["dragon"]:
+        dragon_enemy_pos=game_data[enemy]["dragon"][dragon_enemy]["pos"]
+        all_entity_enemy_pos.append(dragon_enemy_pos)
+        dif_y=abs(int(dragon_enemy_pos[0])-int(dragon_pos[0]))
+        dif_x=abs(int(dragon_enemy_pos[1])-int(dragon_pos[1]))
+        dif=max(dif_y, dif_x)
+        if dif < nearest_entity[1]:
+            nearest_entity=[dragon_enemy_pos, dif]
+    
+    for apprentice_enemy in game_data[enemy]["apprentices"]:
         
+        apprentice_enemy_pos=game_data[enemy]["apprentices"][apprentice_enemy]["pos"]
+        all_entity_enemy_pos.append(apprentice_enemy_pos)
+        dif_y=abs(int(apprentice_enemy_pos[0])-int(dragon_pos[0]))
+        dif_x=abs(int(apprentice_enemy_pos[1])-int(dragon_pos[1]))
+        dif=max(dif_y, dif_x)
+        if dif < nearest_entity[1]:
+            nearest_entity=[apprentice_enemy_pos, dif]
+            
+    if nearest_entity:
         order=[0, 0]
-        if app_pos[0]>eggs[egg_focus]["pos"][0]:
+        if dragon_pos[0]>nearest_entity[0][0]:
             order[0]=-1
-        elif app_pos[0]<eggs[egg_focus]["pos"][0]:
+        elif dragon_pos[0]<nearest_entity[0][0]:
             order[0]=1
-        if app_pos[1]>eggs[egg_focus]["pos"][1]:
+        if dragon_pos[1]>nearest_entity[0][1]:
             order[1]=-1
-        elif app_pos[1]<eggs[egg_focus]["pos"][1]:
+        elif dragon_pos[1]<nearest_entity[0][1]:
             order[1]=1
             
-        orders=(f'{apprentice}:@{int(app_pos[0])+order[0]}-{int(app_pos[1])+order[1]}')
+        orders=(f'{dragon}:@{int(dragon_pos[0])+order[0]}-{int(dragon_pos[1])+order[1]}')
+        
+    return orders
+    
+    
+        
+        
+        
+        
+        
+            
+
+def focus_egg(game_data, player, apprentice:str, eggs=False):
+    #init orders variable
+    orders=[]
+    if game_data["eggs"]:
+        if not eggs:
+            eggs={}
+            #get all egg pos
+            for egg in game_data["eggs"]:
+                    egg_pos=game_data["eggs"][egg]["pos"]
+                    eggs[egg]={}
+                    eggs[egg]={"pos": egg_pos, "dif": 0, "focus": False}
+                
+        #get order for every apprentices
+        app_pos=game_data[player]["apprentices"][apprentice]["pos"]
+        
+        egg_focus=False
+        #check for nearby eggs to hatch them
+        for egg in eggs:
+            dif_y=abs(int(eggs[egg]["pos"][0])-int(app_pos[0]))
+            dif_x=abs(int(eggs[egg]["pos"][1])-int(app_pos[1]))
+            eggs[egg]["dif"]=max(dif_y, dif_x)
+        #check for nearest egg to hatch it
+        nearest_egg=10000
+        for egg in eggs:
+            if eggs[egg]["focus"]==False and eggs[egg]["dif"]<=nearest_egg:
+                nearest_egg=eggs[egg]["dif"]
+                egg_focus=egg
+        if egg_focus:        
+            eggs[egg_focus]["focus"]=True
+            
+            order=[0, 0]
+            if app_pos[0]>eggs[egg_focus]["pos"][0]:
+                order[0]=-1
+            elif app_pos[0]<eggs[egg_focus]["pos"][0]:
+                order[0]=1
+            if app_pos[1]>eggs[egg_focus]["pos"][1]:
+                order[1]=-1
+            elif app_pos[1]<eggs[egg_focus]["pos"][1]:
+                order[1]=1
+                
+            orders=(f'{apprentice}:@{int(app_pos[0])+order[0]}-{int(app_pos[1])+order[1]}')
+        else:
+            orders=""
     else:
         orders=""
 
@@ -198,6 +264,7 @@ def all_possible_move(game_data:dict, player:str, enemy:str)->list:
     implementation: : Mitta Kylian, De Braekeleer Mickaël (v.1 10/04/25)
     """
     orders=[]
+    eggs={}
     size=game_data["map"]
     size_y=int(size[0])
     size_x=int(size[1])
@@ -208,7 +275,13 @@ def all_possible_move(game_data:dict, player:str, enemy:str)->list:
         for dragon in game_data[enemy]["dragon"]:
             dragon_pos=game_data[enemy]["dragon"][dragon]["pos"]
             dragon_range=game_data[enemy]["dragon"][dragon]["attack_range"]+1
-            if abs(position[0]-dragon_pos[0])<dragon_range and abs(position[1]-dragon_pos[1])<dragon_range: 
+            
+            max_y=max(position[0], dragon_pos[0])
+            min_y=min(position[0], dragon_pos[0])
+            max_x=max(position[1], dragon_pos[1])
+            min_x=min(position[1], dragon_pos[1])  
+                 
+            if abs(max_y-min_y)<dragon_range and abs(max_x-min_x)<dragon_range: 
                 enemy_nearby=True
         if enemy_nearby:
             for move in [[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]:
@@ -217,10 +290,6 @@ def all_possible_move(game_data:dict, player:str, enemy:str)->list:
                 if pos_y>0 and pos_y<size_y and pos_x>1 and pos_x<size_x:
                     order.append(f"{apprentice}:@{pos_y}-{pos_x}")
         else:
-            try:
-                test=eggs
-            except:
-                eggs={}
             path_to_egg, eggs = focus_egg(game_data, player, apprentice, eggs)
             order.append(path_to_egg)
         orders.append(order)
@@ -228,13 +297,39 @@ def all_possible_move(game_data:dict, player:str, enemy:str)->list:
     for dragon in game_data[player]["dragon"]:
         order=[]
         position=game_data[player]["dragon"][dragon]["pos"]
-        for move in [[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]:
-            pos_y=int(position[0]+move[0])
-            pos_x=int(position[1]+move[1])
-            if pos_y>0 and pos_y<size_y and pos_x>1 and pos_x<size_x:
-                order.append(f"{dragon}:@{pos_y}-{pos_x}")
-        for attack in ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]:
-            order.append(f"{dragon}:x{attack}")  
+        enemy_nearby=False
+        for enemy_dragon in game_data[enemy]["dragon"]:
+            dragon_pos=game_data[enemy]["dragon"][enemy_dragon]["pos"]
+            dragon_range=game_data[enemy]["dragon"][enemy_dragon]["attack_range"]
+            
+            max_y=max(position[0], dragon_pos[0])
+            min_y=min(position[0], dragon_pos[0])
+            max_x=max(position[1], dragon_pos[1])
+            min_x=min(position[1], dragon_pos[1])  
+                 
+            if abs(max_y-min_y)<dragon_range and abs(max_x-min_x)<dragon_range: 
+                enemy_nearby=True
+        for apprentice in game_data[enemy]["apprentices"]:
+            apprentice_pos=game_data[enemy]["apprentices"][apprentice]["pos"]
+            dragon_range=game_data[player]["dragon"][dragon]["attack_range"]
+            
+            max_y=max(position[0], apprentice_pos[0])
+            min_y=min(position[0], apprentice_pos[0])
+            max_x=max(position[1], apprentice_pos[1])
+            min_x=min(position[1], apprentice_pos[1])  
+                 
+            if abs(max_y-min_y)<dragon_range and abs(max_x-min_x)<dragon_range: 
+                enemy_nearby=True
+        if enemy_nearby:
+            for move in [[0, 0], [0, 1], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, -1], [-1, 0]]:
+                pos_y=int(position[0]+move[0])
+                pos_x=int(position[1]+move[1])
+                if pos_y>0 and pos_y<size_y and pos_x>1 and pos_x<size_x:
+                    order.append(f"{apprentice}:@{pos_y}-{pos_x}")
+            for attack in ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]:
+                order.append(f"{dragon}:x{attack}")
+        else:
+            order.append(search_enemies(game_data, player, dragon, enemy))
         orders.append(order)
             
     return orders
@@ -293,7 +388,7 @@ def load_map(map_file_path:str)->dict:
                 game_data[player]["apprentices"][info[1]]["pos"]=[int(info[2]), int(info[3])]
                 game_data[player]["apprentices"][info[1]]["max_health"]=int(info[4])
                 game_data[player]["apprentices"][info[1]]["current_health"]=int(info[4])
-                game_data[player]["apprentices"][info[1]]["regeneration"]=int(info[5][0:1])
+                game_data[player]["apprentices"][info[1]]["regeneration"]=int(info[5][0:2])
                 game_data[player]["apprentices"][info[1]]["linked_dragon"]=[]   
                 line+=1
         elif raw_data[line].split(":")[0]=="eggs":
@@ -308,7 +403,7 @@ def load_map(map_file_path:str)->dict:
                 game_data["eggs"][info[0]]["current_health"]=int(info[4])
                 game_data["eggs"][info[0]]["attack_damage"]=int(info[5])
                 game_data["eggs"][info[0]]["attack_range"]=int(info[6])
-                game_data["eggs"][info[0]]["regeneration"]=int(info[7][0:1])
+                game_data["eggs"][info[0]]["regeneration"]=int(info[7][0:2])
                 if line == len(raw_data)-1:
                     #return game_data with all map info  
                     return game_data
