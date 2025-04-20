@@ -105,10 +105,13 @@ def get_AI_orders(game_data:dict, player:str)->list:
                 tile=dodge(positions, danger_positions)
         if tile:
             order=(f"{apprentice}:@{tile[0]}-{tile[1]}")
-        else:
+        elif game_data["eggs"]:
             exit=focus_egg(game_data, player, apprentice, eggs)
             order=exit[0]
             eggs=exit[1]
+        else:
+            order=move_far(game_data, player, apprentice,enemy)
+            order=f"{apprentice}:@{pos[0]+order[0]}-{pos[1]+order[1]}"
                   
         orders.append(order)
         
@@ -118,10 +121,37 @@ def get_AI_orders(game_data:dict, player:str)->list:
         alt_game_data=summon(alt_game_data, player)
         orders=get_AI_orders(alt_game_data, player)
         orders.append("summon")
-    print(orders) 
     
     
     return orders
+
+def move_far(game_data, player, apprentice, enemy):
+    size=game_data["map"]
+    pos=game_data[player]["apprentices"][apprentice]["pos"]
+    order=[pos[0], pos[1]]
+    nearest_entity = [False, int(10000000)]
+    for dragon_enemy in  game_data[enemy]["dragon"]:
+        dragon_enemy_pos=game_data[enemy]["dragon"][dragon_enemy]["pos"]
+        dif_y=abs(int(dragon_enemy_pos[0])-int(pos[0]))
+        dif_x=abs(int(dragon_enemy_pos[1])-int(pos[1]))
+        dif=max(dif_y, dif_x)
+        if dif < nearest_entity[1]:
+            nearest_entity=[dragon_enemy_pos, dif]
+    
+    if nearest_entity[0]:
+        order=[0, 0]
+        if pos[0]>nearest_entity[0][0] and pos[0]+1<=size[0]:
+            order[0]=+1
+        elif pos[0]<nearest_entity[0][0] and pos[0]-1>0:
+            order[0]=-1
+        if pos[1]>nearest_entity[0][1] and pos[1]+1<=size[1]:
+            order[1]=+1
+        elif pos[1]<nearest_entity[0][1] and pos[1]-1>0:
+            order[1]=-1
+            
+    return order
+    
+    
 
 def attack_nearest(game_data, player, dragon, enemy):
     lowest_target=[False, False, False, int(100000)]
@@ -243,7 +273,7 @@ def attack_nearest(game_data, player, dragon, enemy):
         return [f"{dragon}:x{direction}", tiles]
     else:
         return search_enemies(game_data, player, dragon, enemy), None
-        
+    
     
         
 
@@ -272,15 +302,15 @@ def check_dangerous_tiles(game_data: dict, enemy: str):
     for dragon in game_data[enemy]["dragon"]:
         pos=game_data[enemy]["dragon"][dragon]["pos"]
         attack_range=game_data[enemy]["dragon"][dragon]["attack_range"]
-        for tile in range (attack_range):
-            tiles_in_range.append([[pos[0]+attack_range+1, pos[1]], dragon])
-            tiles_in_range.append([[pos[0], pos[1]+attack_range+1], dragon])
-            tiles_in_range.append([[pos[0]+attack_range+1, pos[1]+attack_range+1], dragon])
-            tiles_in_range.append([[pos[0]-attack_range-1, pos[1]], dragon])
-            tiles_in_range.append([[pos[0], pos[1]-attack_range-1], dragon])
-            tiles_in_range.append([[pos[0]-attack_range-1, pos[1]-attack_range+1], dragon])
-            tiles_in_range.append([[pos[0]+attack_range-1, pos[1]+attack_range+1], dragon])  
-            tiles_in_range.append([[pos[0]+attack_range+1, pos[1]-attack_range+1], dragon])
+        for tile in range (1, attack_range+1):
+            tiles_in_range.append([[pos[0]+attack_range, pos[1]], dragon])
+            tiles_in_range.append([[pos[0], pos[1]+attack_range], dragon])
+            tiles_in_range.append([[pos[0]+attack_range, pos[1]+attack_range], dragon])
+            tiles_in_range.append([[pos[0]-attack_range, pos[1]], dragon])
+            tiles_in_range.append([[pos[0], pos[1]-attack_range], dragon])
+            tiles_in_range.append([[pos[0]-attack_range, pos[1]-attack_range], dragon])
+            tiles_in_range.append([[pos[0]+attack_range, pos[1]+attack_range], dragon])  
+            tiles_in_range.append([[pos[0]+attack_range, pos[1]-attack_range], dragon])
     return tiles_in_range
         
 
@@ -560,7 +590,7 @@ def custom_len(word:str)->int:
     count=0
     for char in word:
         #custom filter filled emoji maybe used in the program
-        if char in "🚹🚺🐉🟨🏰🥚🟩🟥":
+        if char in "🚹🚺🐉🟨🏰🥚🟩🟥🐲":
             count+=2
         else:
             count+=1
@@ -605,7 +635,10 @@ def generate_map_grid(Size_X:int, Size_Y:int, game_data:dict)->list:
             #get dragon pos and place them on the grid
             pos_X=game_data[player]["dragon"][dragon]["pos"][1]
             pos_Y=game_data[player]["dragon"][dragon]["pos"][0]
-            map_grid[pos_X][pos_Y]="🐉"  
+            if player=="player1":
+                map_grid[pos_X][pos_Y]="🐉"
+            else:
+                map_grid[pos_X][pos_Y]="🐲"  
     for egg in game_data["eggs"]:
         #get egg pos and place them on the grid
         pos_X=game_data["eggs"][egg]["pos"][1]
@@ -627,7 +660,7 @@ def display(game_data: dict):
     implementation: Mitta Kylian, De Braekeleer Mickaël (06/03/25)
     """
     #initial clear
-    #print(term.home + term.clear + term.hide_cursor)
+    print(term.home + term.clear + term.hide_cursor)
     
     #initial map size
     Size_Y = game_data["map"][0]
