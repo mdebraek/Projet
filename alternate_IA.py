@@ -149,6 +149,18 @@ def move_far(game_data, player, apprentice, enemy):
         elif pos[1]<nearest_entity[0][1] and pos[1]-1>0:
             order[1]=-1
             
+        if order[0]==0:
+            if size[0]-pos[0]<pos[0]:
+                order[0]=-1
+            else:
+                order[0]=1
+        elif order[1]==0:
+            if size[1]-pos[1]<pos[1]:
+                order[1]=-1
+            else:
+                order[1]=1
+            
+            
     return order
     
     
