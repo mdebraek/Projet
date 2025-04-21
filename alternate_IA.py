@@ -102,9 +102,9 @@ def get_AI_orders(game_data:dict, player:str)->list:
             danger_positions = [tile for tile, dragon in directly_dangerous_tiles]
             if near_pos in danger_positions :
                 in_danger+=1
-                tile=dodge(positions, danger_positions)
-        if tile:
-            order=(f"{apprentice}:@{tile[0]}-{tile[1]}")
+                order=move_far(game_data, player, apprentice,enemy)
+        if order:
+            order=f"{apprentice}:@{pos[0]+order[0]}-{pos[1]+order[1]}"
         elif game_data["eggs"]:
             exit=focus_egg(game_data, player, apprentice, eggs)
             order=exit[0]
