@@ -21,8 +21,8 @@ def get_AI_orders(game_data:dict, player:str)->list:
     
     Version
     -------
-    specification: De Braekeleer Mickaël (v.1 27/03/25)
-    implementation: : Kylian Mitta, Mickaël De Braekeleer, Aymane El Abbassi, Hamza Sossey-Alaoui (v.1 27/03/25)
+    specification: De Braekeleer Mickaël (27/03/25)
+    implementation: : Mickaël De Braekeleer (27/03/25)
  
     """
     in_danger=0
