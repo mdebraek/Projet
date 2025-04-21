@@ -404,16 +404,25 @@ def check_dangerous_tiles(game_data: dict, enemy: str)-> list:
         
 
 def search_enemies(game_data: dict, player: str, dragon: str, enemy: str, dragon_in=False) -> list:
-    """
-    Recherche les ennemis autour d'une entité donnée et renvoie une liste des ennemis à proximité.
-
-    Paramètres :
-    - game_data : dict, les données actuelles du jeu, qui contiennent des informations sur les entités, leurs positions, etc.
-    - player : str, le nom du joueur pour lequel on fait la recherche ("player1" ou "player2").
-    - entity : str, le nom de l'entité à vérifier (un dragon ou un apprenti). C'est l'entité dont on cherche les ennemis autour.
-
-    Retourne :
-    - list : une liste contenant les ennemis autour de l'entité donnée (ceux qui sont à une case de distance).
+    """ check all tiles in the range of dragons enemy
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+    dragon : name of the dragon (str)
+    enemy : name of the enemy player (str) 
+    dragon_in : (bool)
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    
+    Version
+    -------
+    specification: Aymane el abbassi (12/04/25)
+    implementation: :Aymane el abbassi, Hamza SOSSEY-ALAOUI (15/04/25)
+    implementation: : Mickaël De Braekeleer, kylian mitta (v.2 20/04/25)
+ 
     """
     dragon_pos=game_data[player]["dragon"][dragon]["pos"]
     all_entity_enemy_pos=[]
@@ -469,7 +478,28 @@ def search_enemies(game_data: dict, player: str, dragon: str, enemy: str, dragon
     
                 
 
-def focus_egg(game_data:dict, player:str, apprentice:str, eggs=False):
+def focus_egg(game_data:dict, player:str, apprentice:str, eggs=False)->list:
+    """ check all tiles in the range of dragons enemy
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+    apprentice : name of the apprentice (str)
+    eggs : (bool) 
+    dragon_in : (bool)
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    eggs : list of the eggs (list)
+    
+    Version
+    -------
+    specification: Aymane el abbassi, Hamza SOSSEY-ALAOUI, Mickaël De Braekeleer, kylian mitta (12/04/25)
+    implementation: Aymane el abbassi, Hamza SOSSEY-ALAOUI, Mickaël De Braekeleer, kylian mitta (12/04/25)
+    implementation: : Mickaël De Braekeleer, kylian mitta (v.2 18/04/25)
+
+    """
     #init orders variable
     orders=[]
     if game_data["eggs"]:
