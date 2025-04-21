@@ -125,7 +125,27 @@ def get_AI_orders(game_data:dict, player:str)->list:
     
     return orders
 
-def move_far(game_data, player, apprentice, enemy):
+def move_far(game_data:dict, player:str, apprentice:str, enemy:str)->list:
+    """move apprentice as far as possible from enemy dragons
+
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+    apprentice : name of the apprentice (str)
+    enemy : name of the enemi player  (str)
+
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    
+    Version
+    -------
+    specification: Mitta kylian (20/04/25)
+    implementation: : Mickaël De Braekeleer (20/04/25)
+ 
+    """
     size=game_data["map"]
     pos=game_data[player]["apprentices"][apprentice]["pos"]
     order=[pos[0], pos[1]]
@@ -165,7 +185,27 @@ def move_far(game_data, player, apprentice, enemy):
     
     
 
-def attack_nearest(game_data, player, dragon, enemy):
+def attack_nearest(game_data:dict, player:str, dragon:str, enemy:str)->list:
+    """ dragons attack if enemy entities are within its range
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    player : name of the player (str)
+    dragon: name of the dragon (str)
+    enemy : name of the enemy player  (str)
+
+    
+    returns
+    -------
+    orders : order with the correct format (list)
+    
+    Version
+    -------
+    specification: Mitta kylian (20/04/25)
+    implementation: : Mickaël De Braekeleer, kylian mitta (20/04/25)
+    implementaation : Kylian Mitta, Mickaël De Braekeleer, Aymane El Abbassi, Hamza Sossey-Alaoui (v2. 20/04/25)
+ 
+    """
     lowest_target=[False, False, False, int(100000)]
     tiles=[]
     tiles_in_range=[]
@@ -289,7 +329,25 @@ def attack_nearest(game_data, player, dragon, enemy):
     
         
 
-def dodge(pos, directly_dangerous_tiles):
+def dodge(pos:list, directly_dangerous_tiles:list)->list:
+    """ dragons attack if enemy entities are within its range
+    parameters
+    ----------
+    pos : psition of the entity (list)
+    directly_dangerous_tiles: all dangerous tiles around the entity (list)
+
+    
+    returns
+    -------
+    near_tiles : save tiles nearest to the entity (list)
+    False : (bool) 
+    
+    Version
+    -------
+    specification: Mitta kylian (18/04/25)
+    implementation: : Mickaël De Braekeleer (18/04/25)
+ 
+    """
     if not type(pos[0])==type([]):
         for y in range (-1, 2):
             for x in range (-1, 2):
@@ -309,7 +367,26 @@ def dodge(pos, directly_dangerous_tiles):
                         return False
     
     
-def check_dangerous_tiles(game_data: dict, enemy: str):
+def check_dangerous_tiles(game_data: dict, enemy: str)-> list:
+    """ check all tiles in the range of dragons enemy
+    parameters
+    ----------
+    game_data : dictionnary of dictionnary that contain all game data about player and the map(dict)
+    enemy : name of the enemy player(str) 
+    
+
+    
+    returns
+    -------
+    tiles_in_range : list of aall dangerous tiles (list)
+    
+    Version
+    -------
+    specification: Mitta kylian (15/04/25)
+    implementation: : Mickaël De Braekeleer (18/04/25)
+    implementation: : Mickaël De Braekeleer, kylian mitta (v.2 20/04/25)
+ 
+    """
     tiles_in_range=[]
     for dragon in game_data[enemy]["dragon"]:
         pos=game_data[enemy]["dragon"][dragon]["pos"]
