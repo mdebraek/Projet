@@ -115,7 +115,7 @@ def get_AI_orders(game_data:dict, player:str)->list:
                   
         orders.append(order)
         
-    if in_danger>=2 and game_data[player]["summon"]==0:
+    if in_danger>=2 and game_data[player]["summon"]==0 and game_data["idle_turn"]<70:
         alt_game_data=copy.deepcopy(game_data)
         alt_game_data[player]["summon"]=10
         alt_game_data=summon(alt_game_data, player)
@@ -1298,7 +1298,7 @@ def play_game(map_path, group_1, type_1, group_2, type_2):
                 game_data[player]["summon"]-=1
                 
         display(game_data)
-        time.sleep(1)
+        time.sleep(0.2)
         
         game=check_win(game_data, False)     
 
