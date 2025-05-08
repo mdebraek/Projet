@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+  <title>Notes par cours</title>
+  
+</head>
+<body>
+  <center><h1>Notes par cours</h1></center>
+
+  <input id="newCourse" placeholder="Ajouter un cours">
+    <button onclick="addCourse()">Ajouter le cours</button>
+    <button onclick="deleteCourse()">Supprimer le cours </button> <br><br>
+  
+
+  <select id="courseSelect" onchange="displayNotes()"></select> <br><br>
+
+  <input id="title" placeholder="Titre de la note">
+  <textarea id="content" placeholder="Contenu de la note"></textarea>
+  <button onclick="saveNote()">Enregistrer la note</button>
+
+  <h2>Notes</h2>
+  <div id="notesContainer"></div>
+
+  <script>
+    function getData() {
+      return JSON.parse(localStorage.getItem('courses')) || {};
+    }
+
+    function setData(data) {
+      localStorage.setItem('courses', JSON.stringify(data));
+    }
+
+    function addCourse() {
+      const courseName = document.getElementById('newCourse').value.trim();
+      if (!courseName) return;
+      const data = getData();
+      if (!data[courseName]) {
+        data[courseName] = [];
+        setData(data);
+        loadCourses();
+      }
+      document.getElementById('newCourse').value = '';
+    }
+
+    function deleteCourse() {
+      const course = document.getElementById('courseSelect').value;
+      if (!course) return;
+
+      if (confirm(`Supprimer le cours "${course}" et toutes ses notes ?`)) {
+        const data = getData();
+        delete data[course];
+        setData(data);
+        loadCourses();
+        document.getElementById('notesContainer').innerHTML = '';
+      }
+    }
+
+    function loadCourses() {
+      const select = document.getElementById('courseSelect');
+      const data = getData();
+      select.innerHTML = '';
+      Object.keys(data).forEach(course => {
+        const option = document.createElement('option');
+        option.value = course;
+        option.textContent = course;
+        select.appendChild(option);
+      });
+      displayNotes();
+    }
+
+    function saveNote() {
+      const course = document.getElementById('courseSelect').value;
+      const title = document.getElementById('title').value.trim();
+      const content = document.getElementById('content').value.trim();
+      if (!course || !title || !content) return;
+
+      const data = getData();
+      const note = { id: Date.now(), title, content };
+      data[course].push(note);
+      setData(data);
+      displayNotes();
+
+      document.getElementById('title').value = '';
+      document.getElementById('content').value = '';
+    }
+
+    function deleteNote(course, id) {
+      const data = getData();
+      data[course] = data[course].filter(note => note.id !== id);
+      setData(data);
+      displayNotes();
+    }
+
+    function displayNotes() {
+      const course = document.getElementById('courseSelect').value;
+      const data = getData();
+      const notes = data[course] || [];
+      const container = document.getElementById('notesContainer');
+      container.innerHTML = '';
+      notes.forEach(note => {
+        container.innerHTML += `
+          <div class="note">
+            <h3>${note.title}</h3>
+            <p>${note.content}</p>
+            <button onclick="deleteNote('${course}', ${note.id})">Supprimer</button>
+          </div>
+        `;
+      });
+    }
+
+    // Initialisation
+    loadCourses();
+  </script>
+</body>
+</html>
